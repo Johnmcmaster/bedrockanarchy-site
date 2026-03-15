@@ -307,7 +307,56 @@ h3 {
     scroll-behavior: auto;
   }
 }
-60% {
+/* Discord button style based on user-provided Uiverse pattern */
+.header-discord.card {
+  display: flex;
+  height: 34px;
+  width: 34px;
+}
+
+.header-discord.card svg {
+  position: absolute;
+  display: flex;
+  width: 60%;
+  height: 60%;
+  font-size: 24px;
+  font-weight: 700;
+  opacity: 1;
+  transition: opacity 0.25s;
+  z-index: 2;
+  padding: 0.25rem;
+  cursor: pointer;
+  transform: scale(1);
+}
+
+.header-discord.card .social-link3 {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  color: whitesmoke;
+  font-size: 24px;
+  text-decoration: none;
+  transition: 0.25s;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  background: transparent;
+}
+
+.header-discord.card .social-link3:hover,
+.header-discord.card .social-link3:focus-visible {
+  background-color: #5865f2;
+  animation: bounce_613 0.4s linear;
+}
+
+@keyframes bounce_613 {
+  40% {
+    transform: scale(1.4);
+  }
+
+  60% {
     transform: scale(0.8);
   }
 
@@ -318,28 +367,4 @@ h3 {
   100% {
     transform: scale(1);
   }
-}
-.discord-circle {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 34px;
-  height: 34px;
-  border-radius: 999px;
-  border: 1px solid var(--line);
-  background: #242c34;
-  color: #f3f4f6;
-  text-decoration: none;
-  transition: background-color 0.2s ease, transform 0.2s ease;
-}
-
-.discord-circle:hover,
-.discord-circle:focus-visible {
-  background: #5865f2;
-  transform: translateY(-1px);
-}
-
-.discord-circle svg {
-  width: 17px;
-  height: 17px;
 }
