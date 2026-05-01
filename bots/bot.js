@@ -11,13 +11,14 @@ const WANDER_MAX   = 24
 const IDLE_MIN_MS  = 1500
 const IDLE_MAX_MS  = 4000
 
-let runtimeId = 0
-let pos       = { x: 0, y: 64, z: 0 }
-let prevPos   = { x: 0, y: 64, z: 0 }
-let yaw       = 0
-let target    = null
-let moving    = false
-let tick      = 0
+let runtimeId    = 0
+let pos          = { x: 0, y: 64, z: 0 }
+let prevPos      = { x: 0, y: 64, z: 0 }
+let yaw          = 0
+let target       = null
+let moving       = false
+let tick         = 0
+let teleportAck  = false
 
 function rand(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min
@@ -57,6 +58,7 @@ client.on('move_player', (packet) => {
     pos.z = packet.position.z
     prevPos = { ...pos }
     console.log(`[${USERNAME}] teleported to ${pos.x.toFixed(1)}, ${pos.y.toFixed(1)}, ${pos.z.toFixed(1)}`)
+    teleportAck = true
     pickTarget()
   }
 })
@@ -78,6 +80,7 @@ client.on('respawn', (packet) => {
 
 client.on('spawn', () => {
   console.log(`[${USERNAME}] spawned`)
+  teleportAck = true
   pickTarget()
 
   setInterval(() => {
@@ -115,6 +118,7 @@ client.on('spawn', () => {
       head_yaw: yaw,
       input_data: {
         up: moving,
+        handled_teleport: teleportAck,
         ascend: false, descend: false, north_jump: false, jump_down: false,
         sprint_down: false, change_height: false, jumping: false,
         auto_jumping_in_water: false, sneaking: false, sneak_down: false,
@@ -148,6 +152,7 @@ client.on('spawn', () => {
       camera_orientation: { x: 0, y: 0, z: 0 },
       raw_move_vector: moving ? { x: 0, z: 1 } : { x: 0, z: 0 }
     })
+    teleportAck = false
   }, TICK_MS)
 })
 
