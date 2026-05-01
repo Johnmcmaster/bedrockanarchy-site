@@ -143,7 +143,10 @@ client.on('spawn', () => {
       interaction_model: 'crosshair',
       interact_rotation: { x: 0, z: 0 },
       tick,
-      delta
+      delta,
+      analogue_move_vector: moving ? { x: 0, z: 1 } : { x: 0, z: 0 },
+      camera_orientation: { x: 0, y: 0, z: 0 },
+      raw_move_vector: moving ? { x: 0, z: 1 } : { x: 0, z: 0 }
     })
   }, TICK_MS)
 })
