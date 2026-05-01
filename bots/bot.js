@@ -102,7 +102,7 @@ client.on('spawn', () => {
       mode: 'normal',
       on_ground: true,
       ridden_runtime_id: 0,
-      tick: BigInt(tick)
+      tick
     })
   }, TICK_MS)
 })
