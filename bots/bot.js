@@ -2,11 +2,20 @@ const bedrock = require('bedrock-protocol')
 
 const HOST = 'bedrockanarchy.org'
 const PORT = 19132
-const BOT_COUNT = 10
 const STAGGER_MS = 1500  // delay between each bot connecting
 
+const NAMES = [
+  'xX_Vortex_Xx', 'SniperzKing99', 'DarkReaper2007', 'CreeperSlayer42',
+  'NightWolf_303', 'BlazeFire77', 'ShadowStrike21', 'IceDagger_YT',
+  'xXProGamer69Xx', 'ChaosRuler', 'VenomFang88', 'SwiftBlade_1',
+  'DemonHunter404', 'StormBreaker_X', 'GhostRider999', 'ToxicSniper_YT',
+  'LegendKiller45', 'RedWolf2012', 'DarkStar_Pro', 'ZeroGrav_TV'
+]
+
+const BOT_COUNT = NAMES.length
+
 function spawnBot(index) {
-  const username = `AnarBot${index}`
+  const username = NAMES[index]
 
   const client = bedrock.createClient({
     host: HOST,
