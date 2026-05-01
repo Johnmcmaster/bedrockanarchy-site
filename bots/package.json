@@ -1,0 +1,11 @@
+{
+  "name": "bedrockanarchy-bots",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "start": "node bot.js"
+  },
+  "dependencies": {
+    "bedrock-protocol": "^3.40.0"
+  }
+}
