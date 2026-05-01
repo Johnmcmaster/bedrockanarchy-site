@@ -12,7 +12,40 @@ const NAMES = [
   'LegendKiller45', 'RedWolf2012', 'DarkStar_Pro', 'ZeroGrav_TV'
 ]
 
+const MESSAGES = [
+  'anyone here?', 'lol', 'this server is crazy', 'just joined',
+  'where is everyone', 'good server ngl', 'bro what', 'lmao',
+  'gg', 'lets gooo', 'anyone got food', 'this is wild',
+  'fr fr', 'no way', 'how long has this server been up',
+  'this is actually fun', 'hello?', 'rip my stuff', 'insane',
+  'okay then', 'yoo', 'bruh', 'what just happened', 'lol nice'
+]
+
 const BOT_COUNT = NAMES.length
+const CHAT_MIN_MS = 20000   // minimum time between messages per bot
+const CHAT_MAX_MS = 60000   // maximum time between messages per bot
+
+function randomInt(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min
+}
+
+function scheduleChat(client, username) {
+  const delay = randomInt(CHAT_MIN_MS, CHAT_MAX_MS)
+  setTimeout(() => {
+    const message = MESSAGES[randomInt(0, MESSAGES.length - 1)]
+    client.queue('text', {
+      type: 'chat',
+      needs_translation: false,
+      source_name: username,
+      xuid: '',
+      platform_chat_id: '',
+      message,
+      filtered_message: ''
+    })
+    console.log(`[${username}] says: ${message}`)
+    scheduleChat(client, username)
+  }, delay)
+}
 
 function spawnBot(index) {
   const username = NAMES[index]
@@ -22,11 +55,12 @@ function spawnBot(index) {
     port: PORT,
     username,
     version: '26.10',
-    offline: true  // set to false and add auth if server requires Xbox Live login
+    offline: true
   })
 
   client.on('spawn', () => {
     console.log(`[${username}] spawned`)
+    scheduleChat(client, username)
   })
 
   client.on('disconnect', ({ message }) => {
