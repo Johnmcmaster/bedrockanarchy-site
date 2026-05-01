@@ -48,6 +48,8 @@ client.on('start_game', (packet) => {
   pos.y = packet.player_position.y
   pos.z = packet.player_position.z
   prevPos = { ...pos }
+  console.log(`[${USERNAME}] game mode: ${packet.player_game_type}, runtimeId: ${runtimeId}`)
+  client.queue('request_chunk_radius', { chunk_radius: 8 })
 })
 
 // accept forced server repositions and re-pick a nearby target
