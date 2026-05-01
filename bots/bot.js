@@ -64,6 +64,13 @@ function spawnBot(index) {
     scheduleChat(client, username)
   })
 
+  client.on('packet', ({ data }) => {
+    const name = data?.name
+    if (name && name !== 'level_chunk' && name !== 'move_entity_delta' && name !== 'update_block') {
+      console.log(`[${username}] << ${name}`)
+    }
+  })
+
   client.on('disconnect', ({ message }) => {
     console.log(`[${username}] disconnected: ${message}`)
   })
