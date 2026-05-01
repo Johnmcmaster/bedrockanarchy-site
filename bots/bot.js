@@ -35,9 +35,9 @@ function scheduleChat(client, username) {
     const message = MESSAGES[randomInt(0, MESSAGES.length - 1)]
     client.queue('text', {
       needs_translation: false,
-      category: 0,
-      type: 1,  // chat
-      source_name: '',
+      category: 'authored',
+      type: 'chat',
+      source_name: username,
       message,
       xuid: '',
       platform_chat_id: '',
