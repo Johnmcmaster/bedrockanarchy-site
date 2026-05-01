@@ -41,7 +41,7 @@ const client = bedrock.createClient({
 })
 
 client.on('start_game', (packet) => {
-  runtimeId = packet.runtime_entity_id
+  runtimeId = Number(packet.runtime_entity_id)
   pos.x = packet.player_position.x
   pos.y = packet.player_position.y
   pos.z = packet.player_position.z
@@ -49,7 +49,7 @@ client.on('start_game', (packet) => {
 
 // accept server position corrections
 client.on('move_player', (packet) => {
-  if (packet.runtime_id === runtimeId) {
+  if (Number(packet.runtime_id) === runtimeId) {
     pos.x = packet.position.x
     pos.y = packet.position.y
     pos.z = packet.position.z
