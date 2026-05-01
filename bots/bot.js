@@ -64,10 +64,14 @@ function spawnBot(index) {
     scheduleChat(client, username)
   })
 
-  client.on('packet', ({ data }) => {
-    const name = data?.name
-    if (name && name !== 'level_chunk' && name !== 'move_entity_delta' && name !== 'update_block') {
-      console.log(`[${username}] << ${name}`)
+  client.on('respawn', (packet) => {
+    if (packet.state === 1) {
+      console.log(`[${username}] died, respawning`)
+      client.queue('respawn', {
+        position: packet.position,
+        state: 2,
+        runtime_entity_id: packet.runtime_entity_id
+      })
     }
   })
 
