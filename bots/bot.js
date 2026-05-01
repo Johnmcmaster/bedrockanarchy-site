@@ -47,12 +47,13 @@ client.on('start_game', (packet) => {
   pos.z = packet.player_position.z
 })
 
-// accept server position corrections
+// accept forced server repositions (teleport/reset only, not normal echoes)
 client.on('move_player', (packet) => {
-  if (Number(packet.runtime_id) === runtimeId) {
+  if (Number(packet.runtime_id) === runtimeId && (packet.mode === 'teleport' || packet.mode === 'reset')) {
     pos.x = packet.position.x
     pos.y = packet.position.y
     pos.z = packet.position.z
+    console.log(`[${USERNAME}] server corrected position to ${pos.x.toFixed(1)}, ${pos.y.toFixed(1)}, ${pos.z.toFixed(1)} (${packet.mode})`)
   }
 })
 
