@@ -1,0 +1,33 @@
+api_version: "0.5"
+
+commands:
+  login:
+    description: "Authenticate with your password"
+    usages: [ "/login <password: string>" ]
+    permissions: [ "simpleauth.command.login" ]
+  register:
+    description: "Register an account with a new password"
+    usages: [ "/register <password: string> <confirm: string>" ]
+    permissions: [ "simpleauth.command.register" ]
+  changepass:
+    description: "Change your password"
+    usages: [ "/changepass <old: string> <new: string>" ]
+    permissions: [ "simpleauth.command.changepass" ]
+  unregister:
+    description: "Force a player to re-register (op only)"
+    usages: [ "/unregister <player: string>" ]
+    permissions: [ "simpleauth.command.unregister" ]
+
+permissions:
+  simpleauth.command.login:
+    description: "Allow players to use /login"
+    default: true
+  simpleauth.command.register:
+    description: "Allow players to use /register"
+    default: true
+  simpleauth.command.changepass:
+    description: "Allow players to change their password"
+    default: true
+  simpleauth.command.unregister:
+    description: "Force-unregister another player"
+    default: op

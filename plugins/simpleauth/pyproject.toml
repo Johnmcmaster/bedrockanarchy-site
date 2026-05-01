@@ -1,0 +1,16 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "endstone-simpleauth"
+version = "1.0.0"
+description = "Password authentication for offline-mode Endstone servers"
+requires-python = ">=3.9"
+dependencies = ["pyyaml"]
+
+[project.entry-points.endstone]
+simpleauth = "endstone_simpleauth:SimpleAuthPlugin"
+
+[tool.hatch.build.targets.wheel]
+packages = ["endstone_simpleauth"]
