@@ -21,7 +21,7 @@ const MESSAGES = [
   'okay then', 'yoo', 'bruh', 'what just happened', 'lol nice'
 ]
 
-const BOT_COUNT = NAMES.length
+const BOT_COUNT = 1  // set to NAMES.length to run all bots
 const CHAT_MIN_MS = 20000   // minimum time between messages per bot
 const CHAT_MAX_MS = 60000   // maximum time between messages per bot
 
@@ -35,9 +35,9 @@ function scheduleChat(client, username) {
     const message = MESSAGES[randomInt(0, MESSAGES.length - 1)]
     client.queue('text', {
       needs_translation: false,
-      category: 1,  // authored (player chat)
-      type: 1,      // chat
-      source_name: username,
+      category: 0,
+      type: 1,  // chat
+      source_name: '',
       message,
       xuid: '',
       platform_chat_id: '',
@@ -61,7 +61,7 @@ function spawnBot(index) {
 
   client.on('spawn', () => {
     console.log(`[${username}] spawned`)
-    // scheduleChat(client, username)  // disabled to test if bots stay connected without chat
+    scheduleChat(client, username)
   })
 
   client.on('disconnect', ({ message }) => {
