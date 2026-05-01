@@ -12,7 +12,7 @@ function spawnBot(index) {
     host: HOST,
     port: PORT,
     username,
-    version: '1.26.12',
+    version: '26.10',
     offline: true  // set to false and add auth if server requires Xbox Live login
   })
 
