@@ -34,13 +34,14 @@ function scheduleChat(client, username) {
   setTimeout(() => {
     const message = MESSAGES[randomInt(0, MESSAGES.length - 1)]
     client.queue('text', {
-      type: 'chat',
       needs_translation: false,
+      category: 1,  // authored (player chat)
+      type: 1,      // chat
       source_name: username,
+      message,
       xuid: '',
       platform_chat_id: '',
-      message,
-      filtered_message: ''
+      has_filtered_message: false
     })
     console.log(`[${username}] says: ${message}`)
     scheduleChat(client, username)
