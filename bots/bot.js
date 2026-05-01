@@ -61,7 +61,7 @@ function spawnBot(index) {
 
   client.on('spawn', () => {
     console.log(`[${username}] spawned`)
-    scheduleChat(client, username)
+    // scheduleChat(client, username)  // disabled to test if bots stay connected without chat
   })
 
   client.on('disconnect', ({ message }) => {
