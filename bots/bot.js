@@ -21,7 +21,7 @@ const MESSAGES = [
   'okay then', 'yoo', 'bruh', 'what just happened', 'lol nice'
 ]
 
-const BOT_COUNT = 1  // set to NAMES.length to run all bots
+const BOT_COUNT = NAMES.length
 const CHAT_MIN_MS = 20000   // minimum time between messages per bot
 const CHAT_MAX_MS = 60000   // maximum time between messages per bot
 
