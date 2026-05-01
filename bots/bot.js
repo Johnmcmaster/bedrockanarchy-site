@@ -154,6 +154,20 @@ client.on('spawn', () => {
       camera_orientation: { x: 0, y: 0, z: 0 },
       raw_move_vector: moving ? { x: 0, z: 1 } : { x: 0, z: 0 }
     })
+
+    // Also send move_player so the server broadcasts position to other clients
+    client.queue('move_player', {
+      runtime_id: runtimeId,
+      position: { x: pos.x, y: pos.y + 1.62, z: pos.z },
+      pitch: 0,
+      yaw,
+      head_yaw: yaw,
+      mode: 'normal',
+      on_ground: true,
+      ridden_runtime_id: 0,
+      tick
+    })
+
     teleportAck = false
   }, TICK_MS)
 })
