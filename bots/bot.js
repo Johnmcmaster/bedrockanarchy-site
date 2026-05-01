@@ -48,7 +48,7 @@ client.on('start_game', (packet) => {
   pos.y = packet.player_position.y
   pos.z = packet.player_position.z
   prevPos = { ...pos }
-  console.log(`[${USERNAME}] game mode: ${packet.player_game_type}, runtimeId: ${runtimeId}`)
+  console.log(`[${USERNAME}] game mode: ${packet.player_gamemode}, runtimeId: ${runtimeId}`)
   client.queue('request_chunk_radius', { chunk_radius: 8 })
 })
 
@@ -115,7 +115,7 @@ client.on('spawn', () => {
     client.queue('player_auth_input', {
       pitch: 0,
       yaw,
-      position: { x: pos.x, y: pos.y + 1.62, z: pos.z },
+      position: { x: pos.x, y: pos.y, z: pos.z },
       move_vector: moving ? { x: 0, z: 1 } : { x: 0, z: 0 },
       head_yaw: yaw,
       input_data: {
@@ -131,7 +131,7 @@ client.on('spawn', () => {
         stop_sprinting: false, start_sneaking: false, stop_sneaking: false,
         start_swimming: false, stop_swimming: false, start_jumping: false,
         start_gliding: false, stop_gliding: false, item_interact: false,
-        block_action: false, item_stack_request: false, handled_teleport: false,
+        block_action: false, item_stack_request: false,
         emoting: false, missed_swing: false, start_crawling: false,
         stop_crawling: false, start_flying: false, stop_flying: false,
         received_server_data: false, client_predicted_vehicle: false,
