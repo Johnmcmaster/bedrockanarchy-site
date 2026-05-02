@@ -1,0 +1,18 @@
+name: AnarchyGuard
+version: 1.0.0
+main: org.bedrockanarchy.anarchyguard.AnarchyGuard
+api: ["1.0.0"]
+description: Hardens bedrockanarchy.org NukkitPetteriM1 against audit-identified exploits
+author: bedrockanarchy
+load: POSTWORLD
+
+commands:
+  aguard:
+    description: AnarchyGuard admin commands
+    permission: anarchyguard.admin
+    usage: /aguard <status|reload|ban <ip>|unban <ip>>
+
+permissions:
+  anarchyguard.admin:
+    description: Full AnarchyGuard control
+    default: op
