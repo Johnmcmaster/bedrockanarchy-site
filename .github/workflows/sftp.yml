@@ -1,0 +1,58 @@
+name: SFTP tool
+
+on:
+  workflow_dispatch:
+    inputs:
+      command:
+        description: What to do on the server
+        type: choice
+        options:
+          - list
+          - get
+          - put
+        default: list
+      remote_path:
+        description: Remote path on the server
+        default: "."
+      depth:
+        description: Recursion depth for list
+        default: "3"
+      local_path:
+        description: Repo path to upload (put only)
+        default: ""
+
+permissions:
+  contents: read
+
+jobs:
+  sftp:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install paramiko
+        run: pip install paramiko
+
+      - name: Run SFTP command
+        env:
+          SFTP_HOST: ${{ secrets.SFTP_HOST }}
+          SFTP_PORT: ${{ secrets.SFTP_PORT }}
+          SFTP_USERNAME: ${{ secrets.SFTP_USERNAME }}
+          SFTP_PASSWORD: ${{ secrets.SFTP_PASSWORD }}
+          CMD: ${{ inputs.command }}
+          REMOTE_PATH: ${{ inputs.remote_path }}
+          DEPTH: ${{ inputs.depth }}
+          LOCAL_PATH: ${{ inputs.local_path }}
+        run: python scripts/sftp_tool.py
+
+      - name: Upload downloaded files as artifact
+        if: inputs.command == 'get'
+        uses: actions/upload-artifact@v4
+        with:
+          name: sftp-download
+          path: sftp_download/
+          if-no-files-found: warn
