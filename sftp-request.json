@@ -1,0 +1,5 @@
+{
+  "command": "list",
+  "remote_path": ".",
+  "depth": 3
+}

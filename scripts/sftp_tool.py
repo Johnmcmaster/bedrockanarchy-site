@@ -22,7 +22,12 @@ TEXT_PRINT_LIMIT = 100_000  # bytes; don't dump huge files into the log
 
 
 def connect() -> paramiko.SFTPClient:
-    host = os.environ["SFTP_HOST"]
+    host = os.environ.get("SFTP_HOST", "")
+    if not host:
+        sys.exit(
+            "SFTP_HOST is empty - add SFTP_HOST/SFTP_PORT/SFTP_USERNAME/"
+            "SFTP_PASSWORD as Actions secrets in the repo settings."
+        )
     port = int(os.environ["SFTP_PORT"])
     transport = paramiko.Transport((host, port))
     transport.connect(
