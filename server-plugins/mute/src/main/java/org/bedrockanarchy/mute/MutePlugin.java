@@ -48,8 +48,8 @@ public final class MutePlugin extends JavaPlugin implements Listener, TabExecuto
         store.load();
 
         getServer().getPluginManager().registerEvents(this, this);
-        bind("mute");
-        bind("unmute");
+        bind("pmute");
+        bind("punmute");
         bind("mutelist");
 
         getLogger().info("BedrockAnarchyMute enabled (" + store.active().size() + " active mutes).");
@@ -112,8 +112,8 @@ public final class MutePlugin extends JavaPlugin implements Listener, TabExecuto
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         switch (command.getName().toLowerCase(Locale.ROOT)) {
-            case "mute":     return cmdMute(sender, args);
-            case "unmute":   return cmdUnmute(sender, args);
+            case "pmute":    return cmdMute(sender, args);
+            case "punmute":  return cmdUnmute(sender, args);
             case "mutelist": return cmdMuteList(sender);
             default:         return false;
         }
@@ -121,8 +121,8 @@ public final class MutePlugin extends JavaPlugin implements Listener, TabExecuto
 
     private boolean cmdMute(CommandSender sender, String[] args) {
         if (args.length < 1) {
-            sender.sendMessage(PREFIX + ChatColor.RED + "Usage: /mute <player> [duration] [reason]");
-            sender.sendMessage(PREFIX + ChatColor.GRAY + "Duration examples: 30m, 2h, 7d, 1w, perm");
+            sender.sendMessage(PREFIX + ChatColor.RED + "Usage: /pmute <player> [duration] [reason]");
+            sender.sendMessage(PREFIX + ChatColor.GRAY + "Duration examples: 30m, 2h, 7d, 1w, perm  (alias: /mute)");
             return true;
         }
 
@@ -172,7 +172,7 @@ public final class MutePlugin extends JavaPlugin implements Listener, TabExecuto
 
     private boolean cmdUnmute(CommandSender sender, String[] args) {
         if (args.length < 1) {
-            sender.sendMessage(PREFIX + ChatColor.RED + "Usage: /unmute <player>");
+            sender.sendMessage(PREFIX + ChatColor.RED + "Usage: /punmute <player>  (alias: /unmute)");
             return true;
         }
         OfflinePlayer target = resolve(args[0]);
@@ -234,7 +234,7 @@ public final class MutePlugin extends JavaPlugin implements Listener, TabExecuto
         if (args.length == 1) {
             String partial = args[0].toLowerCase(Locale.ROOT);
             List<String> out = new ArrayList<>();
-            if (name.equals("unmute")) {
+            if (name.equals("punmute")) {
                 for (Map.Entry<UUID, MuteEntry> e : store.active()) {
                     if (e.getValue().name().toLowerCase(Locale.ROOT).startsWith(partial)) {
                         out.add(e.getValue().name());
@@ -247,7 +247,7 @@ public final class MutePlugin extends JavaPlugin implements Listener, TabExecuto
             }
             return out;
         }
-        if (name.equals("mute") && args.length == 2) {
+        if (name.equals("pmute") && args.length == 2) {
             List<String> out = new ArrayList<>();
             for (String s : Arrays.asList("30m", "1h", "6h", "1d", "7d", "perm")) {
                 if (s.startsWith(args[1].toLowerCase(Locale.ROOT))) out.add(s);

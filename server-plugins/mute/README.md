@@ -5,10 +5,10 @@ A small, persistent chat-mute plugin for the BedrockAnarchy server
 
 ## What it does
 
-- `/mute <player> [duration] [reason]` — mute a player. Duration is optional;
+- `/pmute <player> [duration] [reason]` — mute a player (alias `/mute`). Duration is optional;
   omit it (or use `perm`) for a permanent mute. Examples: `30m`, `2h`, `7d`,
   `1w`, `1d3h`. Anything after the duration is treated as the reason.
-- `/unmute <player>` — remove a mute.
+- `/punmute <player>` — remove a mute (alias `/unmute`).
 - `/mutelist` — show everyone currently muted and their remaining time.
 
 Muted players cannot use public chat or the common private-message commands
@@ -33,6 +33,13 @@ mvn -f server-plugins/mute/pom.xml clean package
 ```
 
 The jar is written to `server-plugins/mute/target/BedrockAnarchyMute-1.0.0.jar`.
+
+## Command naming
+
+The primary commands are `/pmute`, `/punmute`, and `/mutelist`, with
+`/mute` and `/unmute` registered as aliases. The distinct primary names avoid
+colliding with other chat plugins (e.g. ChatControl also registers `/mute`);
+`/pmute` always routes to this plugin regardless of plugin load order.
 
 ## Install
 
