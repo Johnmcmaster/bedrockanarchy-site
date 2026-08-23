@@ -1,0 +1,26 @@
+name: BedrockAnarchyMute
+version: '${project.version}'
+main: org.bedrockanarchy.mute.MutePlugin
+api-version: '1.20'
+author: BedrockAnarchy
+description: Simple, persistent mute system for BedrockAnarchy (Paper + Geyser/Floodgate).
+commands:
+  mute:
+    description: Mute a player (permanently or for a duration).
+    usage: /mute <player> [duration] [reason]
+    permission: bedrockanarchy.mute
+  unmute:
+    description: Unmute a player.
+    usage: /unmute <player>
+    permission: bedrockanarchy.mute
+  mutelist:
+    description: List currently muted players.
+    usage: /mutelist
+    permission: bedrockanarchy.mute
+permissions:
+  bedrockanarchy.mute:
+    description: Allows muting and unmuting players.
+    default: op
+  bedrockanarchy.mute.exempt:
+    description: Players with this permission cannot be muted.
+    default: false
