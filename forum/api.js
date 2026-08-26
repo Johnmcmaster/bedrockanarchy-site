@@ -18,7 +18,7 @@ const API_BASE = "/api";
 
 export const POW_DIFFICULTY = 16;
 
-const STORE_KEY = "nocoords.mock.v1";
+const STORE_KEY = "nocoords.mock.v2";
 const SESSION_SECRET_KEY = "nocoords.session";
 
 /* ------------------------------------------------------------------ *
@@ -94,7 +94,7 @@ const SEED_THREADS = [
   {
     boardId: "b",
     subject: "What are you all listening to while you dig",
-    body: "600 blocks of tunnel to go. Need something.",
+    body: "600 blocks of tunnel to go. Need something.\n\n>digging straight down like it owes me money",
     replies: ["Nothing. Sound on, you want to hear the creeper."],
   },
 ];

@@ -44,8 +44,16 @@ function linkify(escaped) {
   });
 }
 
+/* Classic-board greentext: a line starting with ">" renders in green. */
+function greentext(escaped) {
+  return escaped
+    .split("\n")
+    .map((line) => (line.startsWith("&gt;") ? `<span class="greentext">${line}</span>` : line))
+    .join("\n");
+}
+
 function renderBody(body) {
-  return linkify(escapeHtml(body));
+  return greentext(linkify(escapeHtml(body)));
 }
 
 function timeAgo(timestamp) {
@@ -359,6 +367,7 @@ function postNode(post, isOp, opId, refresh) {
   const node = el(`
     <article class="${classes.join(" ")}" id="post-${escapeHtml(post.id)}">
       <div class="post-meta">
+        <span class="poster-name">Anonymous</span>
         <span class="${idClass}">ID:${escapeHtml(post.posterId)}${post.posterId === opId ? " (OP)" : ""}</span>
         <span>${timeAgo(post.createdAt)}</span>
         <span>No.${escapeHtml(post.id)}</span>
