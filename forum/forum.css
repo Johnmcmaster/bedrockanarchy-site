@@ -84,10 +84,6 @@ p {
   text-decoration: none;
 }
 
-.wordmark .mark-no {
-  color: var(--accent);
-}
-
 .tagline {
   display: none;
 }
