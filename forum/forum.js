@@ -44,7 +44,28 @@ function linkify(escaped) {
   });
 }
 
-/* Classic-board greentext: a line starting with ">" renders in green. */
+/*
+ * Per-thread handles. Derived from the same anonymous per-thread ID, so they
+ * carry no more identity than the ID does: same person, same thread, same
+ * handle; different thread or tomorrow, a different one. Just friendlier to
+ * read than hex.
+ */
+const HANDLE_A = [
+  "Void", "Obsidian", "Creeper", "Phantom", "Wither", "Lava", "Bedrock", "Ender",
+  "Nether", "Feral", "Rogue", "Silent", "Hollow", "Ashen", "Gilded", "Cursed",
+];
+const HANDLE_B = [
+  "Drifter", "Miner", "Ghost", "Raider", "Wanderer", "Pilgrim", "Hermit", "Looter",
+  "Builder", "Nomad", "Scout", "Warden", "Digger", "Smith", "Trapper", "Voyager",
+];
+
+function handleFor(posterId) {
+  const a = parseInt(posterId.slice(0, 2), 16) % HANDLE_A.length;
+  const b = parseInt(posterId.slice(2, 4), 16) % HANDLE_B.length;
+  return HANDLE_A[a] + HANDLE_B[b];
+}
+
+/* Board-style greentext: a line starting with ">" renders in green. */
 function greentext(escaped) {
   return escaped
     .split("\n")
@@ -333,6 +354,8 @@ async function renderThread() {
   const list = document.querySelector("#post-list");
   const yourId = await posterIdFor(thread.id);
   document.querySelector("#your-id").textContent = yourId;
+  const yourName = document.querySelector("#your-name");
+  if (yourName) yourName.textContent = handleFor(yourId);
 
   async function paint() {
     const current = await api.getThread(thread.id);
@@ -362,27 +385,33 @@ function postNode(post, isOp, opId, refresh) {
   if (isOp) classes.push("post-op");
   if (post.removed) classes.push("post-removed");
 
-  const idClass = post.posterId === opId ? "poster-id poster-id-op" : "poster-id";
+  const isFromOp = post.posterId === opId;
+  const idClass = isFromOp ? "poster-id poster-id-op" : "poster-id";
 
   const node = el(`
     <article class="${classes.join(" ")}" id="post-${escapeHtml(post.id)}">
-      <div class="post-meta">
-        <span class="poster-name">Anonymous</span>
-        <span class="${idClass}">ID:${escapeHtml(post.posterId)}${post.posterId === opId ? " (OP)" : ""}</span>
-        <span>${timeAgo(post.createdAt)}</span>
-        <span>No.${escapeHtml(post.id)}</span>
+      <div class="post-side">
+        <span class="poster-name">${escapeHtml(handleFor(post.posterId))}</span>
+        <span class="${idClass}">id ${escapeHtml(post.posterId)}</span>
       </div>
-      <div class="post-body"></div>
+      <div class="post-main">
+        <div class="post-meta">
+          <span>${timeAgo(post.createdAt)}</span>
+          <span>#${escapeHtml(post.id)}</span>
+        </div>
+        <div class="post-body"></div>
+      </div>
     </article>
   `);
 
+  const main = node.querySelector(".post-main");
   const bodyNode = node.querySelector(".post-body");
 
   if (post.removed) {
     bodyNode.textContent = "[removed by operator]";
   } else if (isSealed(post.body)) {
     bodyNode.remove();
-    node.append(sealedNode(post.body));
+    main.append(sealedNode(post.body));
   } else {
     bodyNode.innerHTML = renderBody(post.body);
   }
@@ -392,7 +421,7 @@ function postNode(post, isOp, opId, refresh) {
     const button = el(`<button class="button button-small button-danger" type="button">Remove</button>`);
 
     button.addEventListener("click", async () => {
-      if (!confirm(`Remove post No.${post.id}? This cannot be undone.`)) {
+      if (!confirm(`Remove post #${post.id}? This cannot be undone.`)) {
         return;
       }
       button.disabled = true;
@@ -406,7 +435,7 @@ function postNode(post, isOp, opId, refresh) {
     });
 
     actions.append(button);
-    node.append(actions);
+    main.append(actions);
   }
 
   return node;

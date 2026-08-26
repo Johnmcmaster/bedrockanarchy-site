@@ -1,7 +1,7 @@
 /*
  * NoCoords forum styles.
- * Plain classic board: light page, dense rows, small Verdana, underlined
- * links, boxed replies. No decoration.
+ * Early-2000s forum structure: banner header, nav strip, colored section
+ * bars, alternating rows, posts with an author column. Forest/sage palette.
  *
  * Self-contained on purpose: no @import, no webfont, no third-party request
  * of any kind, so visiting the forum does not leak the visitor's IP to a
@@ -9,17 +9,21 @@
  */
 
 :root {
-  --bg: #f4f4ec;
-  --box: #e9e9dd;
-  --box-line: #b9b9a5;
-  --title: #37522f;
-  --text: #1f1f1f;
-  --muted: #666666;
-  --link: #0000cc;
-  --name: #117743;
-  --greentext: #789922;
-  --warn: #b00000;
-  --input-line: #999999;
+  --page: #c9ccbb;
+  --panel: #f4f3ea;
+  --panel-line: #8f927e;
+  --row-alt: #e9e7d7;
+  --side: #dfddc9;
+  --bar: #35513f;
+  --bar-light: #4a6a54;
+  --bar-text: #f2f5ee;
+  --text: #22261f;
+  --muted: #6a6e5e;
+  --link: #2b4a7e;
+  --name: #35513f;
+  --greentext: #6a8f3c;
+  --warn: #a02c1c;
+  --input-line: #96988a;
   --sans: Verdana, Tahoma, "DejaVu Sans", Arial, sans-serif;
   --mono: "Courier New", Courier, monospace;
 }
@@ -40,17 +44,18 @@ body {
   font-family: var(--sans);
   font-size: 13px;
   color: var(--text);
-  background: var(--bg);
+  background: var(--page);
 }
 
 a {
   color: var(--link);
-  text-decoration: underline;
+  text-decoration: none;
+  font-weight: 700;
 }
 
 a:hover,
 a:focus-visible {
-  color: var(--warn);
+  text-decoration: underline;
 }
 
 h1,
@@ -61,76 +66,87 @@ p {
 }
 
 .shell {
-  width: min(960px, calc(100% - 20px));
-  margin: 0 auto;
-  padding: 8px 0 50px;
+  width: min(980px, calc(100% - 16px));
+  margin: 10px auto 24px;
+  border: 1px solid var(--panel-line);
+  background: var(--panel);
+}
+
+main {
+  padding: 0 12px 16px;
 }
 
 /* ---------- header ---------- */
 
 .masthead {
+  display: grid;
+}
+
+.banner {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
   gap: 12px;
   flex-wrap: wrap;
-  padding: 4px 0 6px;
-  border-bottom: 1px solid var(--box-line);
+  padding: 14px 14px 12px;
+  background: var(--bar);
 }
 
 .wordmark {
-  font-size: 22px;
+  font-size: 26px;
   font-weight: 700;
-  color: var(--title);
+  letter-spacing: 1px;
+  color: var(--bar-text);
   text-decoration: none;
+  text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.35);
 }
 
 .wordmark:hover,
 .wordmark:focus-visible {
-  color: var(--title);
+  color: var(--bar-text);
   text-decoration: none;
 }
 
 .wordmark .mark-no {
-  color: var(--title);
-}
-
-.masthead-nav {
-  font-size: 12px;
-}
-
-.masthead-nav::before {
-  content: "[ ";
-  color: var(--muted);
-}
-
-.masthead-nav::after {
-  content: " ]";
-  color: var(--muted);
-}
-
-.masthead-nav a + a::before {
-  content: " / ";
-  display: inline-block;
-  margin: 0 1px;
-  color: var(--muted);
-  text-decoration: none;
+  color: var(--bar-text);
 }
 
 .tagline {
-  width: 100%;
-  order: 3;
   font-size: 11px;
-  color: var(--muted);
+  color: #c9d6c6;
+}
+
+.masthead-nav {
+  display: flex;
+  gap: 2px;
+  flex-wrap: wrap;
+  padding: 4px 8px;
+  background: var(--bar-light);
+  border-top: 1px solid rgba(255, 255, 255, 0.18);
+  border-bottom: 1px solid var(--panel-line);
+  font-size: 12px;
+}
+
+.masthead-nav a {
+  padding: 2px 9px;
+  color: var(--bar-text);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.masthead-nav a:hover,
+.masthead-nav a:focus-visible {
+  background: rgba(255, 255, 255, 0.16);
+  text-decoration: none;
 }
 
 /* ---------- notices ---------- */
 
 .notice {
-  margin-top: 10px;
-  padding: 6px 10px;
-  border: 1px solid var(--box-line);
-  background: var(--box);
+  margin-top: 12px;
+  padding: 7px 10px;
+  border: 1px solid var(--panel-line);
+  background: var(--row-alt);
   font-size: 12px;
   line-height: 1.55;
 }
@@ -153,13 +169,13 @@ p {
 }
 
 .notice-spaced {
-  margin-top: 24px;
+  margin-top: 22px;
 }
 
 /* ---------- page intro ---------- */
 
 .page-head {
-  padding: 12px 0 6px;
+  padding: 12px 0 4px;
 }
 
 .eyebrow {
@@ -171,7 +187,6 @@ p {
   margin-top: 2px;
   font-size: 18px;
   font-weight: 700;
-  color: var(--title);
   overflow-wrap: anywhere;
 }
 
@@ -183,34 +198,63 @@ p {
   color: var(--muted);
 }
 
+/* ---------- section bars ---------- */
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 18px;
+  padding: 4px 9px;
+  background: var(--bar-light);
+  border: 1px solid var(--panel-line);
+  border-bottom: 0;
+}
+
+.section-title {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--bar-text);
+}
+
 /* ---------- board list ---------- */
 
 .board-grid {
   display: grid;
-  margin-top: 4px;
+  border: 1px solid var(--panel-line);
 }
 
 .board-card {
   display: grid;
-  grid-template-columns: 74px minmax(0, 1fr) auto;
+  grid-template-columns: 86px minmax(0, 1fr) auto;
   gap: 2px 12px;
   align-items: baseline;
-  padding: 5px 2px;
-  border-bottom: 1px dotted var(--box-line);
+  padding: 7px 9px;
   color: var(--text);
   text-decoration: none;
+  font-weight: 400;
+}
+
+.board-card:nth-child(even) {
+  background: var(--row-alt);
+}
+
+.board-card + .board-card {
+  border-top: 1px solid var(--panel-line);
 }
 
 .board-card:hover,
 .board-card:focus-visible {
-  background: var(--box);
+  background: var(--side);
+  text-decoration: none;
   color: var(--text);
 }
 
 .board-slug {
   font-weight: 700;
   color: var(--link);
-  text-decoration: underline;
 }
 
 .board-card h2 {
@@ -237,27 +281,31 @@ p {
 
 .thread-list {
   display: grid;
-  margin-top: 4px;
+  border: 1px solid var(--panel-line);
 }
 
 .thread-row {
   display: grid;
   gap: 2px;
-  padding: 7px 2px;
-  border-bottom: 1px dotted var(--box-line);
+  padding: 7px 9px;
+}
+
+.thread-row:nth-child(even) {
+  background: var(--row-alt);
+}
+
+.thread-row + .thread-row {
+  border-top: 1px solid var(--panel-line);
 }
 
 .thread-row h3 {
   font-size: 13px;
 }
 
-.thread-row h3 a {
-  font-weight: 700;
-}
-
 .thread-excerpt {
   font-size: 12px;
   line-height: 1.5;
+  color: var(--muted);
   overflow-wrap: anywhere;
 }
 
@@ -274,33 +322,51 @@ p {
 
 .post-list {
   display: grid;
-  gap: 6px;
-  justify-items: start;
-  margin-top: 4px;
+  margin-top: 0;
+  border: 1px solid var(--panel-line);
 }
 
 .post {
-  max-width: 100%;
-  padding: 6px 12px 6px 8px;
-  border: 1px solid var(--box-line);
-  background: var(--box);
+  display: grid;
+  grid-template-columns: 148px minmax(0, 1fr);
 }
 
-/* The OP sits directly on the page, classic style. */
-.post-op {
-  justify-self: stretch;
-  border: 0;
-  background: transparent;
-  padding-left: 0;
+.post + .post {
+  border-top: 1px solid var(--panel-line);
 }
 
-.post-removed {
-  border: 1px dashed var(--box-line);
-  background: transparent;
+.post:nth-child(even) .post-main {
+  background: var(--row-alt);
+}
+
+.post-side {
+  display: grid;
+  gap: 3px;
+  align-content: start;
+  padding: 8px 9px;
+  background: var(--side);
+  border-right: 1px solid var(--panel-line);
+  font-size: 11px;
+  overflow-wrap: anywhere;
+}
+
+.post-main {
+  padding: 7px 10px 9px;
+}
+
+.post-op .poster-name::after {
+  content: " (OP)";
+  font-weight: 400;
+  color: var(--warn);
+}
+
+.post-removed .post-main {
+  font-style: italic;
 }
 
 .poster-name {
   font-weight: 700;
+  font-size: 12px;
   color: var(--name);
 }
 
@@ -313,7 +379,7 @@ p {
 }
 
 .post-body {
-  margin-top: 4px;
+  margin-top: 5px;
   font-size: 13px;
   line-height: 1.55;
   white-space: pre-wrap;
@@ -330,13 +396,12 @@ p {
 
 .post-removed .post-body {
   color: var(--muted);
-  font-style: italic;
 }
 
 .post-actions {
   display: flex;
   gap: 6px;
-  margin-top: 6px;
+  margin-top: 7px;
 }
 
 /* ---------- sealed post block ---------- */
@@ -344,10 +409,10 @@ p {
 .sealed {
   display: grid;
   gap: 6px;
-  margin-top: 4px;
+  margin-top: 6px;
   padding: 8px;
-  border: 1px dashed var(--box-line);
-  background: var(--bg);
+  border: 1px dashed var(--panel-line);
+  background: var(--panel);
 }
 
 .sealed-label {
@@ -376,11 +441,11 @@ p {
 .composer {
   display: grid;
   gap: 8px;
-  max-width: 520px;
-  margin-top: 14px;
+  max-width: 540px;
+  margin-top: 16px;
   padding: 10px 12px;
-  border: 1px solid var(--box-line);
-  background: var(--box);
+  border: 1px solid var(--panel-line);
+  background: var(--row-alt);
 }
 
 .composer h2 {
@@ -461,7 +526,7 @@ select:focus-visible {
   padding: 1px 10px;
   border: 1px solid var(--input-line);
   border-radius: 0;
-  background: #e4e4e4;
+  background: #e7e6da;
   color: var(--text);
   font: inherit;
   font-size: 13px;
@@ -469,7 +534,7 @@ select:focus-visible {
 }
 
 .button:hover:not(:disabled) {
-  background: #d7d7d7;
+  background: #dbdacb;
 }
 
 .button:focus-visible {
@@ -507,39 +572,24 @@ select:focus-visible {
 
 /* ---------- misc ---------- */
 
-.toolbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  flex-wrap: wrap;
-  margin-top: 18px;
-  padding-bottom: 2px;
-  border-bottom: 1px solid var(--box-line);
-}
-
-.section-title {
-  font-size: 12px;
-  font-weight: 700;
-}
-
 .empty {
   padding: 16px 10px;
-  border: 1px dashed var(--box-line);
+  border: 1px solid var(--panel-line);
   color: var(--muted);
   text-align: center;
 }
 
 .crumbs {
-  margin-top: 8px;
+  margin-top: 10px;
   font-size: 12px;
   color: var(--muted);
 }
 
 .site-foot {
-  margin-top: 40px;
-  padding-top: 6px;
-  border-top: 1px solid var(--box-line);
+  margin-top: 26px;
+  padding: 6px 12px 10px;
+  border-top: 1px solid var(--panel-line);
+  background: var(--row-alt);
   font-size: 11px;
   line-height: 1.6;
   color: var(--muted);
@@ -557,7 +607,7 @@ select:focus-visible {
   margin-top: 10px;
   padding: 6px 10px;
   border: 1px solid var(--warn);
-  background: #f6e8e6;
+  background: #f2e4e0;
   font-size: 12px;
   color: var(--text);
 }
@@ -584,7 +634,10 @@ select:focus-visible {
 
 @media (max-width: 640px) {
   .shell {
-    width: min(100% - 14px, 960px);
+    width: 100%;
+    margin: 0 0 12px;
+    border-left: 0;
+    border-right: 0;
   }
 
   .board-card {
@@ -597,6 +650,19 @@ select:focus-visible {
 
   .board-stat {
     grid-column: 2;
+  }
+
+  .post {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .post-side {
+    display: flex;
+    gap: 8px;
+    align-items: baseline;
+    border-right: 0;
+    border-bottom: 1px solid var(--panel-line);
+    padding: 5px 9px;
   }
 
   .composer {
