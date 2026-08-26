@@ -43,37 +43,31 @@
 
         <div class="field">
           <label for="body">Post</label>
-          <textarea id="body" name="body" maxlength="8000" placeholder="Text only. No uploads on this site."></textarea>
-          <p class="field-hint">
-            Text only — there is no file upload anywhere on NoCoords, so nothing you post can
-            carry image metadata.
-          </p>
+          <textarea id="body" name="body" maxlength="8000" placeholder="Say something. Text only."></textarea>
         </div>
 
-        <div class="check-row">
-          <input type="checkbox" id="sealed" name="sealed">
-          <label for="sealed">Seal this post (encrypt in my browser with a passphrase)</label>
-        </div>
-
-        <div class="field" id="pass-field" hidden>
-          <label for="passphrase">Passphrase</label>
-          <input type="password" id="passphrase" name="passphrase" autocomplete="new-password">
-          <p class="field-hint">
-            Only people you give this passphrase to can read the post. It is never sent to the
-            server, and it cannot be recovered — lose it and the post is gone for good.
-          </p>
-        </div>
+        <details class="advanced">
+          <summary>Private post (encrypted)</summary>
+          <div class="advanced-body">
+            <div class="check-row">
+              <input type="checkbox" id="sealed" name="sealed">
+              <label for="sealed">Lock this post with a passphrase</label>
+            </div>
+            <div class="field" id="pass-field" hidden>
+              <label for="passphrase">Passphrase</label>
+              <input type="password" id="passphrase" name="passphrase" autocomplete="new-password">
+              <p class="field-hint">
+                Only people you share the passphrase with can read it. It never leaves your
+                browser and cannot be recovered. Good for coords.
+              </p>
+            </div>
+          </div>
+        </details>
 
         <div class="composer-actions">
           <button class="button button-primary" type="submit">Post thread</button>
           <span class="status"></span>
         </div>
-
-        <p class="field-hint">
-          Posting solves a small proof-of-work puzzle (<span id="pow-difficulty">16</span> bits)
-          in your browser. That is how flooding is controlled without accounts, captchas, or
-          storing your IP.
-        </p>
       </form>
 
       <div class="toolbar">

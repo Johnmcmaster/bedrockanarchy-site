@@ -228,13 +228,9 @@ function initComposer(form, { withSubject, submit }) {
         payloadBody = await seal(body, passInput.value);
       }
 
-      setStatus(status, "Solving proof of work…");
-      const challenge = await api.challenge();
-      const proof = await solve(challenge, (attempts) => {
-        setStatus(status, `Solving proof of work… ${attempts.toLocaleString()} tries`);
-      });
-
       setStatus(status, "Posting…");
+      const challenge = await api.challenge();
+      const proof = await solve(challenge);
       await submit({ subject, body: payloadBody, proof });
 
       bodyInput.value = "";
@@ -390,28 +386,23 @@ function postNode(post, isOp, opId, refresh) {
 
   const node = el(`
     <article class="${classes.join(" ")}" id="post-${escapeHtml(post.id)}">
-      <div class="post-side">
+      <div class="post-meta">
         <span class="poster-name">${escapeHtml(handleFor(post.posterId))}</span>
-        <span class="${idClass}">id ${escapeHtml(post.posterId)}</span>
+        ${isFromOp ? '<span class="op-chip">OP</span>' : ""}
+        <span>${timeAgo(post.createdAt)}</span>
+        <span class="${idClass}" hidden>${escapeHtml(post.posterId)}</span>
       </div>
-      <div class="post-main">
-        <div class="post-meta">
-          <span>${timeAgo(post.createdAt)}</span>
-          <span>#${escapeHtml(post.id)}</span>
-        </div>
-        <div class="post-body"></div>
-      </div>
+      <div class="post-body"></div>
     </article>
   `);
 
-  const main = node.querySelector(".post-main");
   const bodyNode = node.querySelector(".post-body");
 
   if (post.removed) {
     bodyNode.textContent = "[removed by operator]";
   } else if (isSealed(post.body)) {
     bodyNode.remove();
-    main.append(sealedNode(post.body));
+    node.append(sealedNode(post.body));
   } else {
     bodyNode.innerHTML = renderBody(post.body);
   }
@@ -435,7 +426,7 @@ function postNode(post, isOp, opId, refresh) {
     });
 
     actions.append(button);
-    main.append(actions);
+    node.append(actions);
   }
 
   return node;
@@ -444,7 +435,7 @@ function postNode(post, isOp, opId, refresh) {
 function sealedNode(body) {
   const node = el(`
     <div class="sealed">
-      <span class="sealed-label">SEALED — encrypted in the poster's browser</span>
+      <span class="sealed-label">🔒 Private post — needs the passphrase</span>
       <form class="sealed-form">
         <label class="visually-hidden" for="unseal-${Math.random().toString(36).slice(2)}">Passphrase</label>
         <input type="password" name="passphrase" placeholder="Passphrase" autocomplete="off">
@@ -468,7 +459,7 @@ function sealedNode(body) {
       revealed.innerHTML = renderBody(plaintext);
       node.replaceWith(revealed);
     } catch {
-      error.textContent = "Wrong passphrase, or this post is damaged.";
+      error.textContent = "That passphrase didn't work.";
       error.hidden = false;
     }
   });
