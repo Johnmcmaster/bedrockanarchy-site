@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Thread — NoCoords</title>
+  <meta name="description" content="Anonymous text-only thread on NoCoords.">
+  <meta name="referrer" content="no-referrer">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; form-action 'none'; base-uri 'none'">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%276%27 fill=%27%230b0c0e%27/%3E%3Ctext x=%2716%27 y=%2723%27 font-family=%27monospace%27 font-size=%2718%27 font-weight=%27700%27 fill=%27%237ee787%27 text-anchor=%27middle%27%3EN%3C/text%3E%3C/svg%3E">
+  <link rel="stylesheet" href="forum.css">
+</head>
+<body data-page="thread">
+  <div class="shell">
+    <header class="masthead">
+      <a class="wordmark" href="./index.html"><span class="mark-no">No</span>Coords</a>
+      <nav class="masthead-nav" aria-label="Primary">
+        <a href="./index.html">Boards</a>
+        <a href="./board.html?b=b">/b/</a>
+        <a href="./board.html?b=anarchy">/anarchy/</a>
+        <a href="./board.html?b=meta">/meta/</a>
+      </nav>
+    </header>
+
+    <main>
+      <p class="notice" id="mock-notice" hidden>
+        <strong>Preview mode.</strong> No server yet — posts are stored in this browser only.
+      </p>
+
+      <p class="crumbs"><a href="./index.html">boards</a> / <span id="thread-board"></span></p>
+
+      <div id="thread-shell">
+        <div class="page-head">
+          <p class="eyebrow">Thread</p>
+          <h1 id="thread-subject">Loading…</h1>
+        </div>
+
+        <div class="post-list" id="post-list"></div>
+      </div>
+
+      <section id="reply-section">
+        <form class="composer" id="reply-form" autocomplete="off">
+          <h2>Reply</h2>
+          <p class="field-hint">
+            Your ID in this thread is <strong id="your-id">…</strong>. It is generated at random
+            for this thread and this browser tab, so it cannot be linked to you or to your posts
+            anywhere else. Close the tab and it is gone.
+          </p>
+
+          <div class="field">
+            <label for="body">Post</label>
+            <textarea id="body" name="body" maxlength="8000" placeholder="Text only."></textarea>
+          </div>
+
+          <div class="check-row">
+            <input type="checkbox" id="sealed" name="sealed">
+            <label for="sealed">Seal this post (encrypt in my browser with a passphrase)</label>
+          </div>
+
+          <div class="field" id="pass-field" hidden>
+            <label for="passphrase">Passphrase</label>
+            <input type="password" id="passphrase" name="passphrase" autocomplete="new-password">
+            <p class="field-hint">
+              Never sent to the server and impossible to recover. Share it out of band with the
+              people who should be able to read this.
+            </p>
+          </div>
+
+          <div class="composer-actions">
+            <button class="button button-primary" type="submit">Post reply</button>
+            <span class="status"></span>
+          </div>
+        </form>
+      </section>
+
+      <div class="admin-bar" id="admin-bar">
+        <span>Operator tools · <span id="admin-state">locked</span></span>
+        <label class="visually-hidden" for="admin-key">Admin key</label>
+        <input type="password" id="admin-key" placeholder="Admin key" autocomplete="off">
+        <button class="button button-small" type="button" id="admin-apply">Unlock</button>
+        <button class="button button-small" type="button" id="admin-clear">Lock</button>
+      </div>
+    </main>
+
+    <footer class="site-foot">
+      <p>Text only. No accounts. No logs.</p>
+    </footer>
+  </div>
+
+  <script type="module" src="forum.js"></script>
+</body>
+</html>

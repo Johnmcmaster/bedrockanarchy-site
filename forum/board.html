@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Board — NoCoords</title>
+  <meta name="description" content="Anonymous text-only board on NoCoords.">
+  <meta name="referrer" content="no-referrer">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; form-action 'none'; base-uri 'none'">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%276%27 fill=%27%230b0c0e%27/%3E%3Ctext x=%2716%27 y=%2723%27 font-family=%27monospace%27 font-size=%2718%27 font-weight=%27700%27 fill=%27%237ee787%27 text-anchor=%27middle%27%3EN%3C/text%3E%3C/svg%3E">
+  <link rel="stylesheet" href="forum.css">
+</head>
+<body data-page="board">
+  <div class="shell">
+    <header class="masthead">
+      <a class="wordmark" href="./index.html"><span class="mark-no">No</span>Coords</a>
+      <nav class="masthead-nav" aria-label="Primary">
+        <a href="./index.html">Boards</a>
+        <a href="./board.html?b=b">/b/</a>
+        <a href="./board.html?b=anarchy">/anarchy/</a>
+        <a href="./board.html?b=meta">/meta/</a>
+      </nav>
+    </header>
+
+    <main>
+      <p class="notice" id="mock-notice" hidden>
+        <strong>Preview mode.</strong> No server yet — posts are stored in this browser only.
+      </p>
+
+      <p class="crumbs"><a href="./index.html">boards</a> /</p>
+
+      <div class="page-head">
+        <p class="eyebrow">Board</p>
+        <h1 id="board-name">Board</h1>
+        <p id="board-description"></p>
+      </div>
+
+      <form class="composer" id="new-thread-form" autocomplete="off">
+        <h2>Start a thread</h2>
+
+        <div class="field">
+          <label for="subject">Subject</label>
+          <input type="text" id="subject" name="subject" maxlength="120" placeholder="What is this about">
+        </div>
+
+        <div class="field">
+          <label for="body">Post</label>
+          <textarea id="body" name="body" maxlength="8000" placeholder="Text only. No uploads on this site."></textarea>
+          <p class="field-hint">
+            Text only — there is no file upload anywhere on NoCoords, so nothing you post can
+            carry image metadata.
+          </p>
+        </div>
+
+        <div class="check-row">
+          <input type="checkbox" id="sealed" name="sealed">
+          <label for="sealed">Seal this post (encrypt in my browser with a passphrase)</label>
+        </div>
+
+        <div class="field" id="pass-field" hidden>
+          <label for="passphrase">Passphrase</label>
+          <input type="password" id="passphrase" name="passphrase" autocomplete="new-password">
+          <p class="field-hint">
+            Only people you give this passphrase to can read the post. It is never sent to the
+            server, and it cannot be recovered — lose it and the post is gone for good.
+          </p>
+        </div>
+
+        <div class="composer-actions">
+          <button class="button button-primary" type="submit">Post thread</button>
+          <span class="status"></span>
+        </div>
+
+        <p class="field-hint">
+          Posting solves a small proof-of-work puzzle (<span id="pow-difficulty">16</span> bits)
+          in your browser. That is how flooding is controlled without accounts, captchas, or
+          storing your IP.
+        </p>
+      </form>
+
+      <div class="toolbar">
+        <span class="section-title">Threads</span>
+      </div>
+      <div class="thread-list" id="thread-list"></div>
+
+      <div class="admin-bar" id="admin-bar">
+        <span>Operator tools · <span id="admin-state">locked</span></span>
+        <label class="visually-hidden" for="admin-key">Admin key</label>
+        <input type="password" id="admin-key" placeholder="Admin key" autocomplete="off">
+        <button class="button button-small" type="button" id="admin-apply">Unlock</button>
+        <button class="button button-small" type="button" id="admin-clear">Lock</button>
+      </div>
+    </main>
+
+    <footer class="site-foot">
+      <p>Text only. No accounts. No logs.</p>
+    </footer>
+  </div>
+
+  <script type="module" src="forum.js"></script>
+</body>
+</html>

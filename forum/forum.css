@@ -1,0 +1,607 @@
+/*
+ * NoCoords forum styles.
+ * Self-contained on purpose: no @import, no webfont, no third-party request of
+ * any kind. Every asset the browser fetches comes from this origin, so visiting
+ * the forum does not leak the visitor's IP to a font CDN or an analytics host.
+ */
+
+:root {
+  --bg: #08090a;
+  --panel: #101214;
+  --panel-soft: #15181b;
+  --panel-raised: #1a1e22;
+  --line: rgba(255, 255, 255, 0.1);
+  --line-strong: rgba(255, 255, 255, 0.18);
+  --text: #e8ebee;
+  --muted: #9aa3ad;
+  --faint: #6c757e;
+  --accent: #7ee787;
+  --accent-soft: rgba(126, 231, 135, 0.12);
+  --warn: #f0883e;
+  --danger: #f85149;
+  --sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  --shadow: 0 18px 48px rgba(0, 0, 0, 0.4);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* Class selectors like .field below would otherwise beat the UA rule for
+   [hidden] and leave hidden elements on screen. */
+[hidden] {
+  display: none !important;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: var(--sans);
+  font-size: 15px;
+  color: var(--text);
+  background: linear-gradient(180deg, #0b0c0e 0%, #08090a 100%);
+}
+
+a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+a:hover,
+a:focus-visible {
+  text-decoration: underline;
+}
+
+h1,
+h2,
+h3,
+p {
+  margin: 0;
+}
+
+.shell {
+  width: min(1000px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: 20px 0 80px;
+}
+
+/* ---------- header ---------- */
+
+.masthead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--line);
+}
+
+.wordmark {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 2px;
+  font-family: var(--mono);
+  font-size: 1.35rem;
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  color: var(--text);
+}
+
+.wordmark:hover {
+  text-decoration: none;
+}
+
+.wordmark .mark-no {
+  color: var(--accent);
+}
+
+.masthead-nav {
+  display: flex;
+  gap: 18px;
+  flex-wrap: wrap;
+  font-size: 0.9rem;
+}
+
+.masthead-nav a {
+  color: var(--muted);
+}
+
+.masthead-nav a:hover,
+.masthead-nav a[aria-current="page"] {
+  color: var(--text);
+}
+
+/* ---------- privacy banner ---------- */
+
+.notice {
+  margin-top: 20px;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-left: 2px solid var(--accent);
+  border-radius: 10px;
+  background: var(--panel);
+  font-size: 0.88rem;
+  line-height: 1.6;
+  color: var(--muted);
+}
+
+.notice strong {
+  color: var(--text);
+}
+
+.notice p + p {
+  margin-top: 8px;
+}
+
+.notice code {
+  font-family: var(--mono);
+  font-size: 0.85em;
+  color: var(--accent);
+}
+
+.notice-warn {
+  border-left-color: var(--warn);
+}
+
+.notice-spaced {
+  margin-top: 32px;
+}
+
+/* ---------- page intro ---------- */
+
+.page-head {
+  padding: 28px 0 20px;
+}
+
+.eyebrow {
+  font-family: var(--mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+
+.page-head h1 {
+  margin-top: 10px;
+  font-size: clamp(1.9rem, 5vw, 2.9rem);
+  line-height: 1.05;
+  letter-spacing: -0.045em;
+}
+
+.page-head p {
+  max-width: 62ch;
+  margin-top: 12px;
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+/* ---------- board list ---------- */
+
+.board-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 14px;
+  margin-top: 8px;
+}
+
+.board-card {
+  display: grid;
+  gap: 8px;
+  align-content: start;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--panel);
+  color: var(--text);
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.board-card:hover,
+.board-card:focus-visible {
+  border-color: var(--line-strong);
+  background: var(--panel-soft);
+  text-decoration: none;
+}
+
+.board-slug {
+  font-family: var(--mono);
+  font-size: 0.95rem;
+  color: var(--accent);
+}
+
+.board-card h2 {
+  font-size: 1.02rem;
+  letter-spacing: -0.02em;
+}
+
+.board-card p {
+  color: var(--muted);
+  font-size: 0.88rem;
+  line-height: 1.6;
+}
+
+.board-stat {
+  font-family: var(--mono);
+  font-size: 0.76rem;
+  color: var(--faint);
+}
+
+/* ---------- thread list ---------- */
+
+.thread-list {
+  display: grid;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.thread-row {
+  display: grid;
+  gap: 8px;
+  padding: 16px 18px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--panel);
+  transition: border-color 0.15s ease;
+}
+
+.thread-row:hover {
+  border-color: var(--line-strong);
+}
+
+.thread-row h3 {
+  font-size: 1rem;
+  letter-spacing: -0.02em;
+}
+
+.thread-row h3 a {
+  color: var(--text);
+}
+
+.thread-excerpt {
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+.thread-meta,
+.post-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  color: var(--faint);
+}
+
+/* ---------- posts ---------- */
+
+.post-list {
+  display: grid;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.post {
+  padding: 16px 18px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--panel);
+}
+
+.post-op {
+  border-color: var(--line-strong);
+  background: var(--panel-soft);
+}
+
+.post-removed {
+  border-style: dashed;
+  background: transparent;
+}
+
+.poster-id {
+  color: var(--accent);
+}
+
+.poster-id-op {
+  color: var(--warn);
+}
+
+.post-body {
+  margin-top: 10px;
+  font-size: 0.95rem;
+  line-height: 1.7;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.post-body a {
+  overflow-wrap: anywhere;
+}
+
+.post-removed .post-body {
+  color: var(--faint);
+  font-style: italic;
+}
+
+.post-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+/* ---------- encrypted post block ---------- */
+
+.sealed {
+  display: grid;
+  gap: 10px;
+  margin-top: 10px;
+  padding: 14px;
+  border: 1px dashed var(--line-strong);
+  border-radius: 10px;
+  background: var(--panel-raised);
+}
+
+.sealed-label {
+  font-family: var(--mono);
+  font-size: 0.76rem;
+  color: var(--warn);
+}
+
+.sealed-form {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.sealed-form input {
+  flex: 1 1 200px;
+}
+
+.sealed-error {
+  font-size: 0.82rem;
+  color: var(--danger);
+}
+
+/* ---------- forms ---------- */
+
+.composer {
+  display: grid;
+  gap: 12px;
+  margin-top: 20px;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--panel);
+}
+
+.composer h2 {
+  font-size: 1.05rem;
+  letter-spacing: -0.02em;
+}
+
+.field {
+  display: grid;
+  gap: 6px;
+}
+
+.field label {
+  font-family: var(--mono);
+  font-size: 0.76rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+
+input[type="text"],
+input[type="password"],
+textarea,
+select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  font-size: 0.95rem;
+}
+
+textarea {
+  min-height: 130px;
+  font-family: var(--mono);
+  font-size: 0.9rem;
+  line-height: 1.6;
+  resize: vertical;
+}
+
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.field-hint {
+  font-size: 0.8rem;
+  line-height: 1.55;
+  color: var(--faint);
+}
+
+.check-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.check-row input {
+  margin-top: 3px;
+}
+
+.check-row label {
+  font-family: var(--sans);
+  font-size: 0.9rem;
+  letter-spacing: normal;
+  text-transform: none;
+  color: var(--text);
+}
+
+.composer-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 0 16px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.button:hover:not(:disabled) {
+  border-color: var(--line-strong);
+  background: var(--panel-soft);
+}
+
+.button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.button-primary {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #08160b;
+  font-weight: 700;
+}
+
+.button-primary:hover:not(:disabled) {
+  background: #93eb9b;
+  border-color: #93eb9b;
+}
+
+.button-small {
+  min-height: 30px;
+  padding: 0 12px;
+  font-size: 0.8rem;
+}
+
+.button-danger {
+  border-color: rgba(248, 81, 73, 0.5);
+  color: var(--danger);
+}
+
+.status {
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.status-error {
+  color: var(--danger);
+}
+
+/* ---------- misc ---------- */
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 24px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--line);
+}
+
+.section-title {
+  font-family: var(--mono);
+  font-size: 0.76rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+
+.empty {
+  padding: 28px 18px;
+  border: 1px dashed var(--line);
+  border-radius: 12px;
+  color: var(--muted);
+  text-align: center;
+}
+
+.crumbs {
+  margin-top: 18px;
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  color: var(--faint);
+}
+
+.site-foot {
+  margin-top: 56px;
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
+  font-size: 0.82rem;
+  line-height: 1.7;
+  color: var(--faint);
+}
+
+.site-foot p + p {
+  margin-top: 8px;
+}
+
+.admin-bar {
+  display: none;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 14px;
+  padding: 10px 14px;
+  border: 1px solid rgba(248, 81, 73, 0.4);
+  border-radius: 10px;
+  background: rgba(248, 81, 73, 0.06);
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.admin-bar.is-active {
+  display: flex;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (max-width: 640px) {
+  .shell {
+    width: min(100% - 20px, 1000px);
+  }
+
+  .masthead {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 10px;
+  }
+}
