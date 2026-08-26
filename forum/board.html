@@ -13,16 +13,12 @@
 <body data-page="board">
   <div class="shell">
     <header class="masthead">
-      <div class="banner">
-        <a class="wordmark" href="./index.html">nocoords</a>
-        <span class="tagline">the minecraft anarchy board</span>
-      </div>
-      <nav class="masthead-nav" aria-label="Boards"><a href="./index.html">Boards</a><a href="./board.html?b=b">Random</a><a href="./board.html?b=anarchy">Anarchy</a><a href="./board.html?b=servers">Servers</a><a href="./board.html?b=tech">Tech</a><a href="./board.html?b=meta">Meta</a></nav>
+      <a class="wordmark" href="./index.html">nocoords</a>
     </header>
 
     <main>
       <p class="notice" id="mock-notice" hidden>
-        <strong>Preview mode.</strong> No server yet — posts are stored in this browser only.
+        <strong>Preview.</strong> No server yet — posts stay in this browser.
       </p>
 
       <p class="crumbs"><a href="./index.html">boards</a> /</p>
@@ -34,16 +30,14 @@
       </div>
 
       <form class="composer" id="new-thread-form" autocomplete="off">
-        <h2>Start a thread</h2>
-
         <div class="field">
-          <label for="subject">Subject</label>
-          <input type="text" id="subject" name="subject" maxlength="120" placeholder="What is this about">
+          <label class="visually-hidden" for="subject">Subject</label>
+          <input type="text" id="subject" name="subject" maxlength="120" placeholder="Subject">
         </div>
 
         <div class="field">
-          <label for="body">Post</label>
-          <textarea id="body" name="body" maxlength="8000" placeholder="Say something. Text only."></textarea>
+          <label class="visually-hidden" for="body">Post</label>
+          <textarea id="body" name="body" maxlength="8000" placeholder="Start a thread…"></textarea>
         </div>
 
         <details class="advanced">
@@ -54,12 +48,9 @@
               <label for="sealed">Lock this post with a passphrase</label>
             </div>
             <div class="field" id="pass-field" hidden>
-              <label for="passphrase">Passphrase</label>
-              <input type="password" id="passphrase" name="passphrase" autocomplete="new-password">
-              <p class="field-hint">
-                Only people you share the passphrase with can read it. It never leaves your
-                browser and cannot be recovered. Good for coords.
-              </p>
+              <label class="visually-hidden" for="passphrase">Passphrase</label>
+              <input type="password" id="passphrase" name="passphrase" autocomplete="new-password" placeholder="Passphrase">
+              <p class="field-hint">Never leaves your browser. Can't be recovered.</p>
             </div>
           </div>
         </details>
@@ -85,7 +76,7 @@
     </main>
 
     <footer class="site-foot">
-      <p>Text only. No accounts. No logs.</p>
+      <p>Text only · no accounts · no logs</p>
     </footer>
   </div>
 
