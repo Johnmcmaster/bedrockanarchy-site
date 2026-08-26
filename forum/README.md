@@ -1,7 +1,8 @@
 # NoCoords forum
 
-Anonymous, text-only message board for the BedrockAnarchy community. No
-accounts, no uploads, no tracking.
+Anonymous, text-only message board for the Minecraft anarchy scene — any
+server, any edition, not just BedrockAnarchy. No accounts, no uploads, no
+tracking.
 
 Current state: **front-end complete, running against a mock backend.** Every
 post lives in the visitor's own `localStorage`, so nothing is shared between
@@ -137,3 +138,35 @@ nothing about them persists.
 **What this site cannot do.** It cannot hide a visitor's IP from the host or
 from anyone watching the network. That needs Tor, and the front page says so
 rather than implying the site handles it.
+
+## Roadmap: live chat bridge
+
+Planned after the forum backend lands: a live chat box on the site relaying
+game chat across the operator's Minecraft servers and Discord, both
+directions. Sketch, so the backend API can be shaped for it now:
+
+```
+[MC server 1]──console/ws──┐
+[MC server 2]──console/ws──┤                  ┌──ws fan-out──> site chat box
+[Discord]─────bot gateway──┼──bridge daemon───┤
+                           │  (normalizes to  └──posts back──> MC + Discord
+[site visitors]───PoW+ws───┘   one message
+                               format)
+```
+
+- **Bridge daemon** (Node): one adapter per source. Bedrock servers via a
+  WebSocket behavior pack or console pipe, Java servers via RCON/plugin,
+  Discord via a bot on the gateway. Messages normalize to
+  `{ source, name, text, ts }` and fan out to every other adapter.
+- **Site side**: `GET /api/chat/ws` WebSocket, read for everyone. Sending
+  from the site requires the same proof-of-work as posting, appears in game
+  and Discord tagged `[web] Anonymous`, and carries the same no-IP-logging
+  rule as the rest of the backend.
+- **Anonymity note**: game and Discord chat is inherently public under its
+  own usernames, and gets relayed as-is. Forum anonymity applies to what the
+  site itself collects (nothing), not to what people say in game under their
+  gamertag. The chat box is a window, not a confessional — the UI should say
+  so.
+- The bridge is operator-specific (it relays *your* servers). The boards
+  stay scene-wide; the chat box is a feature of the site, not a scoping of
+  it.

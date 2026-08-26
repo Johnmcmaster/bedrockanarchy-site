@@ -18,7 +18,7 @@ const API_BASE = "/api";
 
 export const POW_DIFFICULTY = 16;
 
-const STORE_KEY = "nocoords.mock.v2";
+const STORE_KEY = "nocoords.mock.v3";
 const SESSION_SECRET_KEY = "nocoords.session";
 
 /* ------------------------------------------------------------------ *
@@ -55,7 +55,7 @@ export async function posterIdFor(threadId) {
 
 const BOARDS = [
   { id: "b", name: "Random", description: "Anything at all. The default board." },
-  { id: "mc", name: "Minecraft", description: "Servers, versions, clients, general play." },
+  { id: "servers", name: "Servers", description: "Any anarchy server. Finds, reviews, drama, advertise yours." },
   { id: "anarchy", name: "Anarchy", description: "Griefing, raiding, PvP, base war stories." },
   { id: "tech", name: "Tech", description: "Redstone, farms, exploits, automation." },
   { id: "meta", name: "Meta", description: "About this forum itself." },
