@@ -65,6 +65,12 @@ function handleFor(posterId) {
   return HANDLE_A[a] + HANDLE_B[b];
 }
 
+/* Discord-style name color, derived from the same ID. */
+function handleColor(posterId) {
+  const hue = parseInt(posterId.slice(0, 4), 16) % 360;
+  return `hsl(${hue}, 55%, 38%)`;
+}
+
 /* Board-style greentext: a line starting with ">" renders in green. */
 function greentext(escaped) {
   return escaped
@@ -388,13 +394,17 @@ function postNode(post, isOp, opId, refresh) {
     <article class="${classes.join(" ")}" id="post-${escapeHtml(post.id)}">
       <div class="post-meta">
         <span class="poster-name">${escapeHtml(handleFor(post.posterId))}</span>
-        ${isFromOp ? '<span class="op-chip">OP</span>' : ""}
+        ${isFromOp ? '<span class="op-tag">OP</span>' : ""}
         <span>${timeAgo(post.createdAt)}</span>
         <span class="${idClass}" hidden>${escapeHtml(post.posterId)}</span>
       </div>
       <div class="post-body"></div>
     </article>
   `);
+
+  // CSSOM, not a style attribute: the pages' CSP (style-src 'self') blocks
+  // inline style markup but allows script-set styles.
+  node.querySelector(".poster-name").style.color = handleColor(post.posterId);
 
   const bodyNode = node.querySelector(".post-body");
 
