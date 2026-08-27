@@ -18,7 +18,7 @@ const API_BASE = "/api";
 
 export const POW_DIFFICULTY = 16;
 
-const STORE_KEY = "nocoords.mock.v3";
+const STORE_KEY = "nocoords.mock.v4";
 const SESSION_SECRET_KEY = "nocoords.session";
 
 /* ------------------------------------------------------------------ *
@@ -89,7 +89,29 @@ const SEED_THREADS = [
     boardId: "tech",
     subject: "Bedrock iron farm rates post-update",
     body: "Anyone benchmarked a standard iron farm since the update? Getting noticeably worse rates than before.",
-    replies: [],
+    replies: [
+      ">>%OP%\nSame here. Roughly 20% down on my counts. Villager pathing changed, rebuild the beds one block higher.",
+    ],
+  },
+  {
+    boardId: "servers",
+    subject: "Which anarchy servers are actually alive right now",
+    body:
+      "Looking for servers with real player counts, not 3 AFK bots on a listing site. "
+      + "Bedrock or Java, doesn't matter. What are you actually playing on?",
+    replies: [
+      "bedrockanarchy.org if you're on Bedrock. Small but real people.",
+      ">>%OP%\n>real player counts\nEvery listing site number is inflated. Join at different times of day and count for yourself.",
+    ],
+  },
+  {
+    boardId: "anarchy",
+    subject: "Best grief you ever pulled off",
+    body: "Not the biggest. The best. Cleverness counts more than TNT count.",
+    replies: [
+      "Joined a group, spent two weeks helping them build. They gave me trust and lava access in that order.",
+      ">>%OP%\nReplaced every chest in a base with trapped chests wired to nothing. They tore their own base apart looking for the wiring.",
+    ],
   },
   {
     boardId: "b",
@@ -134,13 +156,14 @@ function freshStore() {
       removed: false,
     });
 
+    const opPostId = store.posts[store.posts.length - 1].id;
     seed.replies.forEach((reply, index) => {
       bumpedAt = createdAt + (index + 1) * 21 * 60000;
       store.posts.push({
         id: `p${store.seq++}`,
         threadId,
         posterId: randomPosterId(),
-        body: reply,
+        body: reply.replace(/%OP%/g, opPostId),
         createdAt: bumpedAt,
         removed: false,
       });

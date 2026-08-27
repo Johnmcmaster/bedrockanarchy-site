@@ -71,16 +71,21 @@ function handleColor(posterId) {
   return `hsl(${hue}, 55%, 38%)`;
 }
 
-/* Board-style greentext: a line starting with ">" renders in green. */
+/* ">>p3" quotes another post in the thread; a single ">" line is greentext. */
+function postRefs(escaped) {
+  return escaped.replace(/&gt;&gt;(p\d+)/g,
+    '<a class="post-ref" href="#post-$1">&gt;&gt;$1</a>');
+}
+
 function greentext(escaped) {
   return escaped
     .split("\n")
-    .map((line) => (line.startsWith("&gt;") ? `<span class="greentext">${line}</span>` : line))
+    .map((line) => (/^&gt;(?!&gt;)/.test(line) ? `<span class="greentext">${line}</span>` : line))
     .join("\n");
 }
 
 function renderBody(body) {
-  return greentext(linkify(escapeHtml(body)));
+  return greentext(postRefs(linkify(escapeHtml(body))));
 }
 
 function timeAgo(timestamp) {
@@ -179,10 +184,50 @@ function initAdminBar(onChange) {
  * Wires a composer form. `submit` receives { subject, body, proof } and does
  * the actual API call.
  */
-function initComposer(form, { withSubject, submit }) {
+function initComposer(form, { withSubject, submit, draftKey }) {
   if (!form) return;
 
   const bodyInput = form.querySelector("[name=body]");
+
+  // Auto-grow as you type, up to half the screen.
+  bodyInput.addEventListener("input", () => {
+    bodyInput.style.height = "auto";
+    bodyInput.style.height = `${Math.min(bodyInput.scrollHeight, window.innerHeight / 2)}px`;
+  });
+
+  // Ctrl/Cmd+Enter posts.
+  bodyInput.addEventListener("keydown", (event) => {
+    if (event.key === "Enter" && (event.ctrlKey || event.metaKey)) {
+      event.preventDefault();
+      form.requestSubmit();
+    }
+  });
+
+  // Keep an unsent draft so a stray tap doesn't eat the post.
+  if (draftKey) {
+    try {
+      const saved = sessionStorage.getItem(draftKey);
+      if (saved) bodyInput.value = saved;
+    } catch { /* storage unavailable */ }
+    bodyInput.addEventListener("input", () => {
+      try {
+        if (bodyInput.value) sessionStorage.setItem(draftKey, bodyInput.value);
+        else sessionStorage.removeItem(draftKey);
+      } catch { /* ignore */ }
+    });
+  }
+
+  // Character count, shown only when it starts to matter.
+  const counter = document.createElement("span");
+  counter.className = "char-count";
+  counter.hidden = true;
+  form.querySelector(".composer-actions")?.append(counter);
+  bodyInput.addEventListener("input", () => {
+    const left = MAX_BODY - bodyInput.value.length;
+    counter.hidden = left > 500;
+    counter.textContent = `${left}`;
+    counter.classList.toggle("char-count-low", left < 50);
+  });
   const subjectInput = form.querySelector("[name=subject]");
   const sealToggle = form.querySelector("[name=sealed]");
   const passInput = form.querySelector("[name=passphrase]");
@@ -240,7 +285,11 @@ function initComposer(form, { withSubject, submit }) {
       await submit({ subject, body: payloadBody, proof });
 
       bodyInput.value = "";
+      bodyInput.style.height = "";
       if (passInput) passInput.value = "";
+      if (draftKey) {
+        try { sessionStorage.removeItem(draftKey); } catch { /* ignore */ }
+      }
     } catch (error) {
       setStatus(status, error.message ?? "Something went wrong.", true);
       submitButton.disabled = false;
@@ -260,7 +309,7 @@ async function renderBoardIndex() {
   boards.forEach((board) => {
     target.append(
       el(`
-        <a class="board-card" href="./board.html?b=${encodeURIComponent(board.id)}">
+        <a class="board-card" href="./board.html?b=${encodeURIComponent(board.id)}" title="${escapeHtml(board.description)}">
           <span class="board-slug">/${escapeHtml(board.id)}/</span>
           <h2>${escapeHtml(board.name)}</h2>
           <p>${escapeHtml(board.description)}</p>
@@ -350,10 +399,15 @@ async function renderThread() {
   const { thread } = data;
   document.title = `${thread.subject} — NoCoords`;
   document.querySelector("#thread-subject").textContent = thread.subject;
+  const info = document.querySelector("#thread-info");
+  if (info) {
+    const replies = data.posts.length - 1;
+    info.textContent = `${replies} repl${replies === 1 ? "y" : "ies"} · started ${timeAgo(thread.createdAt)}`;
+  }
   document.querySelector("#thread-board").innerHTML =
     `<a href="./board.html?b=${encodeURIComponent(thread.boardId)}">/${escapeHtml(thread.boardId)}/</a>`;
 
-  const list = document.querySelector("#post-list");
+  const postList = document.querySelector("#post-list");
   const yourId = await posterIdFor(thread.id);
   document.querySelector("#your-id").textContent = yourId;
   const yourName = document.querySelector("#your-name");
@@ -363,14 +417,45 @@ async function renderThread() {
     const current = await api.getThread(thread.id);
     const opId = current.posts[0]?.posterId;
 
-    list.innerHTML = "";
-    current.posts.forEach((post, index) => list.append(postNode(post, index === 0, opId, paint)));
+    postList.innerHTML = "";
+    current.posts.forEach((post, index) => postList.append(postNode(post, index === 0, opId, paint)));
   }
 
   await paint();
 
+  const list = document.querySelector("#post-list");
+  list.addEventListener("click", (event) => {
+    const ref = event.target.closest("a.post-ref");
+    if (ref) {
+      const target = document.querySelector(ref.getAttribute("href"));
+      if (target) {
+        event.preventDefault();
+        target.scrollIntoView({ block: "center" });
+        target.classList.remove("post-flash");
+        void target.offsetWidth;
+        target.classList.add("post-flash");
+      }
+      return;
+    }
+
+    const no = event.target.closest("a.post-no");
+    if (no) {
+      event.preventDefault();
+      const textarea = document.querySelector("#reply-form [name=body]");
+      const selection = String(window.getSelection() ?? "").trim();
+      let quote = `>>${no.dataset.post}\n`;
+      if (selection) {
+        quote += selection.split("\n").map((line) => `>${line}`).join("\n") + "\n";
+      }
+      textarea.value = textarea.value ? `${textarea.value.replace(/\n?$/, "\n")}${quote}` : quote;
+      textarea.dispatchEvent(new Event("input"));
+      textarea.focus();
+    }
+  });
+
   initComposer(document.querySelector("#reply-form"), {
     withSubject: false,
+    draftKey: `nocoords.draft.${thread.id}`,
     submit: async ({ body, proof }) => {
       await api.createPost({ threadId: thread.id, body, proof });
       await paint();
@@ -395,8 +480,9 @@ function postNode(post, isOp, opId, refresh) {
       <div class="post-meta">
         <span class="poster-name">${escapeHtml(handleFor(post.posterId))}</span>
         ${isFromOp ? '<span class="op-tag">OP</span>' : ""}
-        <span>${timeAgo(post.createdAt)}</span>
+        <span title="${new Date(post.createdAt).toLocaleString()}">${timeAgo(post.createdAt)}</span>
         <span class="${idClass}" hidden>${escapeHtml(post.posterId)}</span>
+        <a class="post-no" href="#post-${escapeHtml(post.id)}" data-post="${escapeHtml(post.id)}" title="Quote this post">#${escapeHtml(post.id)}</a>
       </div>
       <div class="post-body"></div>
     </article>

@@ -161,6 +161,12 @@ p {
   color: var(--muted);
 }
 
+.page-head-meta {
+  margin-top: 3px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
 /* ---------- section headers ---------- */
 
 .toolbar {
@@ -345,6 +351,41 @@ p {
   display: flex;
   gap: 6px;
   margin-top: 8px;
+}
+
+.post-no {
+  margin-left: auto;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.post-no:hover {
+  color: var(--link);
+  text-decoration: none;
+}
+
+.post-ref {
+  font-weight: 600;
+}
+
+.post:target,
+.post-flash {
+  background: #f3f8ef;
+}
+
+@keyframes post-flash-fade {
+  from { background: #e2efd9; }
+  to { background: #f3f8ef; }
+}
+
+.post-flash {
+  animation: post-flash-fade 0.9s ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .post-flash {
+    animation: none;
+  }
 }
 
 /* ---------- sealed post block ---------- */
@@ -537,6 +578,17 @@ select:focus-visible {
 
 .button-danger:hover:not(:disabled) {
   background: #faf0ee;
+}
+
+.char-count {
+  margin-left: auto;
+  font-size: 12px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.char-count-low {
+  color: var(--danger);
 }
 
 .status {
