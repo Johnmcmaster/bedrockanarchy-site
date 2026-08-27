@@ -390,6 +390,20 @@ p {
 
 /* ---------- /book posts ---------- */
 
+/*
+ * Monocraft — a Minecraft-style pixel font by Idrees Hassan, SIL Open Font
+ * License 1.1 (see fonts/LICENSE-Monocraft.txt). Served from this origin,
+ * so the no-external-requests rule still holds. Used only inside the book
+ * reader; the rest of the site keeps the system stack.
+ */
+@font-face {
+  font-family: "Monocraft";
+  src: url("fonts/Monocraft.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
 .book-inline {
   display: inline-flex;
   align-items: center;
@@ -416,8 +430,8 @@ p {
 }
 
 .book-inline-title {
-  font-weight: 600;
-  font-size: 14px;
+  font-family: "Monocraft", var(--mono);
+  font-size: 13px;
 }
 
 .book-inline-pages {
@@ -452,7 +466,7 @@ p {
 
 .book-counter {
   text-align: right;
-  font-family: var(--mono);
+  font-family: "Monocraft", var(--mono);
   font-size: 13px;
   color: #5b4a36;
 }
@@ -462,8 +476,8 @@ p {
   min-height: 330px;
   max-height: 60vh;
   overflow-y: auto;
-  font-family: var(--mono);
-  font-size: 14px;
+  font-family: "Monocraft", var(--mono);
+  font-size: 15px;
   line-height: 1.6;
   color: #2b2013;
   white-space: pre-wrap;
@@ -532,9 +546,8 @@ p {
     inset 2px 2px 0 #d3d3d3,
     inset -2px -2px 0 #5a5a5a;
   color: #ffffff;
-  font: inherit;
-  font-size: 14px;
-  font-weight: 700;
+  font-family: "Monocraft", var(--mono);
+  font-size: 15px;
   text-shadow: 1px 1px 0 #3f3f3f;
   cursor: pointer;
 }
