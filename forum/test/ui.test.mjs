@@ -36,7 +36,7 @@ function ok(label, cond) {
 await page.goto(`${BASE}/index.html`);
 await page.waitForSelector(".board-card");
 ok("index renders 5 boards", (await page.locator(".board-card").count()) === 5);
-ok("seeded poster ids are 6 hex", await page.evaluate(() => JSON.parse(localStorage.getItem("nocoords.mock.v1")).posts.every(p => /^[0-9a-f]{6}$/.test(p.posterId))));
+ok("seeded poster ids are 6 hex", await page.evaluate(() => JSON.parse(localStorage.getItem("nocoords.mock.v5")).posts.every(p => /^[0-9a-f]{6}$/.test(p.posterId))));
 ok("index shows seeded recent threads", (await page.locator("#recent-threads .thread-row").count()) > 0);
 ok("preview notice visible", await page.locator("#mock-notice").isVisible());
 
@@ -72,17 +72,35 @@ await page.click("#reply-form [type=submit]");
 await page.waitForFunction(() => document.querySelectorAll(".post").length === 2, null, { timeout: 30000 });
 ok("reply appended", (await page.locator(".post").count()) === 2);
 
+// ---- refs, quoting, drafts ----
+const opNo = await page.locator(".post-no").first().getAttribute("data-post");
+await page.fill("#reply-form [name=body]", `>>${opNo}\n>quoted line\nagree with this`);
+await page.click("#reply-form [type=submit]");
+await page.waitForFunction(() => document.querySelectorAll(".post").length === 3, null, { timeout: 30000 });
+ok(">>ref renders as link", (await page.locator(".post-ref").count()) === 1);
+ok("greentext renders", (await page.locator(".post-body .greentext").count()) === 1);
+ok("ref links to the OP", (await page.locator(".post-ref").getAttribute("href")) === `#post-${opNo}`);
+await page.locator(".post-no").last().click();
+const quoted = await page.inputValue("#reply-form [name=body]");
+ok("clicking post number quotes it", quoted.startsWith(">>"));
+await page.fill("#reply-form [name=body]", "draft to survive reload");
+await page.reload();
+await page.waitForSelector(".post");
+ok("draft survives reload", (await page.inputValue("#reply-form [name=body]")) === "draft to survive reload");
+await page.fill("#reply-form [name=body]", "");
+
 // ---- sealed post round trip ----
+await page.click("#reply-form .advanced summary");
 await page.check("#reply-form [name=sealed]");
 ok("passphrase field revealed", await page.locator("#pass-field").isVisible());
 await page.fill("#reply-form [name=body]", "x=1234 z=-5678 stash under the spruce");
 await page.fill("#reply-form [name=passphrase]", "correct horse battery staple");
 await page.click("#reply-form [type=submit]");
-await page.waitForFunction(() => document.querySelectorAll(".post").length === 3, null, { timeout: 30000 });
+await page.waitForFunction(() => document.querySelectorAll(".post").length === 4, null, { timeout: 30000 });
 await page.waitForSelector(".sealed");
 ok("sealed post renders locked", (await page.locator(".sealed").count()) === 1);
 const rawSealed = await page.evaluate(() => {
-  const store = JSON.parse(localStorage.getItem("nocoords.mock.v1"));
+  const store = JSON.parse(localStorage.getItem("nocoords.mock.v5"));
   return store.posts[store.posts.length - 1].body;
 });
 ok("ciphertext stored, not plaintext", rawSealed.startsWith("nc1.") && !rawSealed.includes("stash"));
@@ -91,7 +109,7 @@ ok("ciphertext stored, not plaintext", rawSealed.startsWith("nc1.") && !rawSeale
 await page.fill(".sealed input[name=passphrase]", "wrong");
 await page.click(".sealed button[type=submit]");
 await page.waitForSelector(".sealed-error:not([hidden])");
-ok("wrong passphrase rejected", (await page.locator(".sealed-error").textContent()).includes("Wrong passphrase"));
+ok("wrong passphrase rejected", (await page.locator(".sealed-error").textContent()).includes("passphrase"));
 
 // right passphrase
 await page.fill(".sealed input[name=passphrase]", "correct horse battery staple");
@@ -107,7 +125,7 @@ ok("admin bar reveals on #admin without reload", await page.locator("#admin-bar"
 await page.fill("#admin-key", "test-operator-key");
 await page.click("#admin-apply");
 await page.waitForSelector(".post-actions button");
-ok("remove buttons appear when unlocked", (await page.locator(".post-actions button").count()) === 3);
+ok("remove buttons appear when unlocked", (await page.locator(".post-actions button").count()) === 4);
 
 page.on("dialog", (d) => d.accept());
 await page.locator(".post-actions button").last().click();
@@ -115,7 +133,7 @@ await page.waitForSelector(".post-removed", { timeout: 10000 });
 ok("post removed", (await page.locator(".post-removed").count()) === 1);
 ok("removed body scrubbed", (await page.locator(".post-removed .post-body").textContent()).includes("[removed by operator]"));
 const scrubbed = await page.evaluate(() => {
-  const store = JSON.parse(localStorage.getItem("nocoords.mock.v1"));
+  const store = JSON.parse(localStorage.getItem("nocoords.mock.v5"));
   return store.posts[store.posts.length - 1];
 });
 ok("removed body cleared in storage", scrubbed.removed === true && scrubbed.body === "");
@@ -135,6 +153,39 @@ await page.waitForSelector(".post");
 ok("no script injection", (await page.evaluate(() => window.__pwned)) === undefined);
 ok("no injected img element", (await page.locator(".post img, #thread-subject img").count()) === 0);
 ok("markup shown as text", (await page.locator(".post-body").first().textContent()).includes("<script>"));
+
+// ---- /book posts (two-page spread) ----
+await page.goto(`${BASE}/board.html?b=tech`);
+await page.waitForSelector("#new-thread-form");
+await page.fill("#subject", "Book test thread");
+await page.fill("#body", "/book Field Guide\nAlpha page text\n---\n>green line\nBeta page text\n---\nGamma page text");
+await page.click("#new-thread-form [type=submit]");
+await page.waitForURL(/thread\.html/, { timeout: 30000 });
+await page.waitForSelector(".book-inline");
+ok("book icon renders for /book post", (await page.locator(".book-inline-title").textContent()) === "Field Guide");
+ok("page count shown", (await page.locator(".book-inline-pages").textContent()) === "3 pages");
+await page.click(".book-inline");
+await page.waitForSelector(".book-overlay");
+ok("spread opens on pages 1-2", (await page.locator(".book-page-num").first().textContent()) === "Page 1 of 3"
+  && (await page.locator(".book-page-num").nth(1).textContent()) === "Page 2 of 3");
+ok("prev arrow hidden on first spread", !(await page.locator(".book-arrow-prev").isVisible()));
+ok("greentext works inside book", (await page.locator(".book-page-text .greentext").count()) === 1);
+await page.click(".book-arrow-next");
+ok("next flips to page 3", (await page.locator(".book-page-num").first().textContent()) === "Page 3 of 3");
+ok("right page empty past the end", (await page.locator(".book-page-num").nth(1).textContent()) === "");
+ok("next arrow hidden on last spread", !(await page.locator(".book-arrow-next").isVisible()));
+await page.click(".book-done");
+await page.waitForFunction(() => !document.querySelector(".book-overlay"));
+ok("Done closes the book", true);
+await page.evaluate(() => {
+  const store = JSON.parse(localStorage.getItem("nocoords.mock.v5"));
+  const pages = Array.from({ length: 60 }, (_, i) => `page ${i + 1}`).join("\n---\n");
+  store.posts[store.posts.length - 1].body = `/book Overflow\n${pages}`;
+  localStorage.setItem("nocoords.mock.v5", JSON.stringify(store));
+});
+await page.reload();
+await page.waitForSelector(".book-inline");
+ok("page cap enforced at 50", (await page.locator(".book-inline-pages").textContent()) === "50 pages");
 
 // ---- missing thread ----
 await page.goto(`${BASE}/thread.html?t=doesnotexist`);

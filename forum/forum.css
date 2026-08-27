@@ -395,6 +395,9 @@ p {
  * License 1.1 (see fonts/LICENSE-Monocraft.txt). Served from this origin,
  * so the no-external-requests rule still holds. Used only inside the book
  * reader; the rest of the site keeps the system stack.
+ *
+ * The open-book artwork (assets/book_open.png) was supplied by the site
+ * owner as fan-made art. The item icon and remaining chrome are original.
  */
 @font-face {
   font-family: "Monocraft";
@@ -425,7 +428,8 @@ p {
   outline: 2px solid var(--link);
 }
 
-.book-inline svg {
+.book-inline svg,
+.book-icon-img {
   image-rendering: pixelated;
 }
 
@@ -450,104 +454,81 @@ p {
   background: rgba(20, 18, 12, 0.6);
 }
 
+.book-wrap {
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+  width: min(720px, 96vw);
+}
+
+/* Two-page spread over the owner-supplied book art. */
 .book-gui {
   position: relative;
-  width: min(400px, 100%);
-  min-height: min(480px, 86vh);
-  padding: 28px 32px 58px;
-  /* Layered tans, darkest at the rim, like the in-game page stack. */
-  background: linear-gradient(#f6efd9, #efe6c9);
-  box-shadow:
-    inset 0 0 0 4px #a8946a,
-    inset 0 0 0 6px #dfd2ac,
-    inset 0 0 0 8px #ede3c4,
-    0 16px 44px rgba(0, 0, 0, 0.5);
-  /* Pixel-stepped corners instead of straight ones. */
-  clip-path: polygon(
-    0 12px, 4px 12px, 4px 8px, 8px 8px, 8px 4px, 12px 4px, 12px 0,
-    calc(100% - 12px) 0, calc(100% - 12px) 4px, calc(100% - 8px) 4px,
-    calc(100% - 8px) 8px, calc(100% - 4px) 8px, calc(100% - 4px) 12px,
-    100% 12px,
-    100% calc(100% - 12px), calc(100% - 4px) calc(100% - 12px),
-    calc(100% - 4px) calc(100% - 8px), calc(100% - 8px) calc(100% - 8px),
-    calc(100% - 8px) calc(100% - 4px), calc(100% - 12px) calc(100% - 4px),
-    calc(100% - 12px) 100%,
-    12px 100%, 12px calc(100% - 4px), 8px calc(100% - 4px),
-    8px calc(100% - 8px), 4px calc(100% - 8px), 4px calc(100% - 12px),
-    0 calc(100% - 12px)
-  );
+  width: 100%;
+  aspect-ratio: 728 / 468;
+  background: url("assets/book_open.png") center / 100% 100% no-repeat;
   image-rendering: pixelated;
+  filter: drop-shadow(0 14px 34px rgba(0, 0, 0, 0.5));
 }
 
-/* Local texture override: when forum/textures/book_page.png is present and
-   enabled, it replaces the CSS-drawn chrome entirely. */
+/* Local texture override still wins when enabled. */
 .has-book-page-texture .book-gui {
   background: url("textures/book_page.png") center / 100% 100% no-repeat;
-  box-shadow: 0 16px 44px rgba(0, 0, 0, 0.5);
-  clip-path: none;
 }
 
-.has-book-page-texture .book-gui::before,
-.has-book-page-texture .book-gui::after {
-  display: none;
-}
-
-.book-icon-img {
-  image-rendering: pixelated;
-}
-
-/* Page-edge lines at the sides, hinting at the stack of pages beneath. */
-.book-gui::before,
-.book-gui::after {
-  content: "";
+.book-col {
   position: absolute;
-  top: 16px;
-  bottom: 16px;
-  width: 2px;
-  background: repeating-linear-gradient(
-    #cbbb92 0, #cbbb92 6px, #ddd0a9 6px, #ddd0a9 12px);
-  pointer-events: none;
+  top: 7%;
+  bottom: 12%;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
 }
 
-.book-gui::before { left: 12px; }
-.book-gui::after { right: 12px; }
+.book-col-left {
+  left: 7.5%;
+  width: 38%;
+}
 
-.book-counter {
+.book-col-right {
+  right: 7.5%;
+  width: 38%;
+}
+
+.book-page-num {
+  font-family: "Monocraft", var(--mono);
+  font-size: clamp(9px, 1.7vw, 12px);
+  color: #6b5b40;
   text-align: right;
-  font-family: "Monocraft", var(--mono);
-  font-size: 13px;
-  color: #5b4a36;
 }
 
-.book-page {
-  margin-top: 8px;
-  min-height: 330px;
-  max-height: 60vh;
-  overflow-y: auto;
+.book-page-text {
+  flex: 1;
+  overflow: hidden;
   font-family: "Monocraft", var(--mono);
-  font-size: 15px;
-  line-height: 1.6;
+  font-size: clamp(10px, 2vw, 15px);
+  line-height: 1.55;
   color: #2b2013;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
 
-.book-page .greentext {
+.book-page-text .greentext {
   color: #4e7a1e;
 }
 
-.book-page a {
+.book-page-text a {
   color: #274a75;
   text-decoration: underline;
 }
 
 @keyframes book-turn-right {
-  from { transform: translateX(14px); opacity: 0; }
+  from { transform: translateX(10px); opacity: 0; }
   to { transform: translateX(0); opacity: 1; }
 }
 
 @keyframes book-turn-left {
-  from { transform: translateX(-14px); opacity: 0; }
+  from { transform: translateX(-10px); opacity: 0; }
   to { transform: translateX(0); opacity: 1; }
 }
 
@@ -563,12 +544,15 @@ p {
 
 .book-arrow {
   position: absolute;
-  bottom: 54px;
+  bottom: 4.5%;
   padding: 4px 6px;
   border: 0;
   background: none;
   cursor: pointer;
 }
+
+.book-arrow-prev { left: 8%; }
+.book-arrow-next { right: 8%; }
 
 /* Arrows brighten on hover, the way the game's page arrows highlight. */
 .book-arrow:hover svg,
@@ -580,16 +564,9 @@ p {
   outline: none;
 }
 
-.book-arrow-prev { left: 18px; }
-.book-arrow-next { right: 18px; }
-
 /* Classic beveled game button. */
 .mc-button {
-  position: absolute;
-  left: 50%;
-  bottom: 12px;
-  transform: translateX(-50%);
-  min-width: 120px;
+  min-width: 130px;
   padding: 6px 16px;
   border: 2px solid #1c1c1c;
   background: #9c9c9c;

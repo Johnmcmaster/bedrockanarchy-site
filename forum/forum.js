@@ -121,9 +121,10 @@ function setStatus(node, message, isError = false) {
  * Pages are separated by a line containing only "---"; pages longer than
  * the in-game-ish limit are split automatically. Hard cap of 50 pages.
  *
- * The art is original pixel work in the game's style, not Mojang's texture
- * files — game assets are copyrighted and this site ships nothing it does
- * not own.
+ * The reader shows a Bedrock-style two-page spread. The open-book artwork
+ * (assets/book_open.png) was supplied by the site owner as fan-made art;
+ * the item icon and remaining chrome are original pixel work. No Mojang
+ * texture files are shipped — game assets are copyrighted.
  */
 const BOOK_MAX_PAGES = 50;
 const BOOK_PAGE_CHARS = 300;
@@ -262,41 +263,56 @@ const ARROW_LEFT = `<svg viewBox="0 0 18 10" width="27" height="15" shape-render
   <path fill="#8a7350" d="M17 4H8V2H7v1H5v1H3v1h2v1h2v1h1V5h9z"/></svg>`;
 
 function openBook(book) {
-  let index = 0;
+  let spread = 0; // index of the left-hand page
 
   const overlay = el(`
     <div class="book-overlay" role="dialog" aria-modal="true" aria-label="${escapeHtml(book.title)}">
-      <div class="book-gui">
-        <div class="book-counter"></div>
-        <div class="book-page"></div>
-        <button class="book-arrow book-arrow-prev" type="button" aria-label="Previous page">${ARROW_LEFT}</button>
-        <button class="book-arrow book-arrow-next" type="button" aria-label="Next page">${ARROW_RIGHT}</button>
+      <div class="book-wrap">
+        <div class="book-gui">
+          <div class="book-col book-col-left">
+            <div class="book-page-num"></div>
+            <div class="book-page-text"></div>
+          </div>
+          <div class="book-col book-col-right">
+            <div class="book-page-num"></div>
+            <div class="book-page-text"></div>
+          </div>
+          <button class="book-arrow book-arrow-prev" type="button" aria-label="Previous pages">${ARROW_LEFT}</button>
+          <button class="book-arrow book-arrow-next" type="button" aria-label="Next pages">${ARROW_RIGHT}</button>
+        </div>
         <button class="mc-button book-done" type="button">Done</button>
       </div>
     </div>
   `);
 
-  const pageNode = overlay.querySelector(".book-page");
-  const counter = overlay.querySelector(".book-counter");
+  const cols = overlay.querySelectorAll(".book-col");
   const prev = overlay.querySelector(".book-arrow-prev");
   const next = overlay.querySelector(".book-arrow-next");
+  const total = book.pages.length;
 
   function paint(direction) {
-    counter.textContent = `Page ${index + 1} of ${book.pages.length}`;
-    pageNode.innerHTML = renderBookPage(book.pages[index]);
-    prev.hidden = index === 0;
-    next.hidden = index === book.pages.length - 1;
+    [0, 1].forEach((offset) => {
+      const i = spread + offset;
+      const col = cols[offset];
+      const has = i < total;
+      col.querySelector(".book-page-num").textContent = has ? `Page ${i + 1} of ${total}` : "";
+      col.querySelector(".book-page-text").innerHTML = has ? renderBookPage(book.pages[i]) : "";
+    });
+    prev.hidden = spread === 0;
+    next.hidden = spread + 2 >= total;
     if (direction) {
-      pageNode.classList.remove("book-turn-left", "book-turn-right");
-      void pageNode.offsetWidth;
-      pageNode.classList.add(direction === 1 ? "book-turn-right" : "book-turn-left");
+      cols.forEach((col) => {
+        col.classList.remove("book-turn-left", "book-turn-right");
+        void col.offsetWidth;
+        col.classList.add(direction === 1 ? "book-turn-right" : "book-turn-left");
+      });
     }
   }
 
   function flip(delta) {
-    const target = index + delta;
-    if (target < 0 || target >= book.pages.length) return;
-    index = target;
+    const target = spread + delta * 2;
+    if (target < 0 || target >= total) return;
+    spread = target;
     paint(delta);
   }
 
