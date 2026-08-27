@@ -117,6 +117,20 @@ cosmetic — the server must enforce the key on every `DELETE`.
 Speech is not moderated. The delete lever exists so illegal content can be
 pulled quickly, which is what keeps the registrar from taking the domain.
 
+## Post commands and formatting
+
+Typing `/` at the start of the composer opens a command palette with fuzzy
+matching (arrows + Enter, Esc to dismiss):
+
+- `/book Title` — a multi-page book; pages split on `---` lines, 50-page cap.
+  Opens in a two-page spread reader with open/write animations.
+- `/mojangles` — the rest of the post renders in the pixel font.
+
+Any post or book page can use Minecraft-style formatting codes: `§0`-`§f`
+colors, `§l` bold, `§o` italic, `§n` underline, `§m` strikethrough, `§k`
+obfuscated (animated scramble), `§r` reset. As in the game, a color code
+resets the style flags.
+
 ## Local texture overrides (for private testing only)
 
 The book reader can use real game textures **on your own machine only**. The

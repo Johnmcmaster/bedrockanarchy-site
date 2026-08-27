@@ -36,7 +36,7 @@ function ok(label, cond) {
 await page.goto(`${BASE}/index.html`);
 await page.waitForSelector(".board-card");
 ok("index renders 5 boards", (await page.locator(".board-card").count()) === 5);
-ok("seeded poster ids are 6 hex", await page.evaluate(() => JSON.parse(localStorage.getItem("nocoords.mock.v5")).posts.every(p => /^[0-9a-f]{6}$/.test(p.posterId))));
+ok("seeded poster ids are 6 hex", await page.evaluate(() => JSON.parse(localStorage.getItem("nocoords.mock.v6")).posts.every(p => /^[0-9a-f]{6}$/.test(p.posterId))));
 ok("index shows seeded recent threads", (await page.locator("#recent-threads .thread-row").count()) > 0);
 ok("preview notice visible", await page.locator("#mock-notice").isVisible());
 
@@ -100,7 +100,7 @@ await page.waitForFunction(() => document.querySelectorAll(".post").length === 4
 await page.waitForSelector(".sealed");
 ok("sealed post renders locked", (await page.locator(".sealed").count()) === 1);
 const rawSealed = await page.evaluate(() => {
-  const store = JSON.parse(localStorage.getItem("nocoords.mock.v5"));
+  const store = JSON.parse(localStorage.getItem("nocoords.mock.v6"));
   return store.posts[store.posts.length - 1].body;
 });
 ok("ciphertext stored, not plaintext", rawSealed.startsWith("nc1.") && !rawSealed.includes("stash"));
@@ -133,7 +133,7 @@ await page.waitForSelector(".post-removed", { timeout: 10000 });
 ok("post removed", (await page.locator(".post-removed").count()) === 1);
 ok("removed body scrubbed", (await page.locator(".post-removed .post-body").textContent()).includes("[removed by operator]"));
 const scrubbed = await page.evaluate(() => {
-  const store = JSON.parse(localStorage.getItem("nocoords.mock.v5"));
+  const store = JSON.parse(localStorage.getItem("nocoords.mock.v6"));
   return store.posts[store.posts.length - 1];
 });
 ok("removed body cleared in storage", scrubbed.removed === true && scrubbed.body === "");
@@ -178,14 +178,39 @@ await page.click(".book-done");
 await page.waitForFunction(() => !document.querySelector(".book-overlay"));
 ok("Done closes the book", true);
 await page.evaluate(() => {
-  const store = JSON.parse(localStorage.getItem("nocoords.mock.v5"));
+  const store = JSON.parse(localStorage.getItem("nocoords.mock.v6"));
   const pages = Array.from({ length: 60 }, (_, i) => `page ${i + 1}`).join("\n---\n");
   store.posts[store.posts.length - 1].body = `/book Overflow\n${pages}`;
-  localStorage.setItem("nocoords.mock.v5", JSON.stringify(store));
+  localStorage.setItem("nocoords.mock.v6", JSON.stringify(store));
 });
 await page.reload();
 await page.waitForSelector(".book-inline");
 ok("page cap enforced at 50", (await page.locator(".book-inline-pages").textContent()) === "50 pages");
+
+// ---- command palette + /mojangles + formatting codes ----
+await page.goto(`${BASE}/board.html?b=b`);
+await page.waitForSelector("#new-thread-form");
+await page.fill("#body", "/");
+await page.waitForSelector(".cmd-palette:not([hidden])");
+ok("command palette opens on /", (await page.locator(".cmd-item").count()) === 2);
+await page.fill("#body", "/mjl");
+ok("fuzzy match narrows to mojangles", (await page.locator(".cmd-item").count()) === 1
+  && (await page.locator(".cmd-name").textContent()).includes("m"));
+await page.focus("#body");
+await page.keyboard.press("Enter");
+ok("Enter picks the command", (await page.inputValue("#body")) === "/mojangles ");
+ok("palette closes after pick", await page.locator(".cmd-palette").isHidden());
+await page.fill("#subject", "Format test");
+await page.fill("#body", "/mojangles \u00a74red words\u00a7r and \u00a72\u00a7lbold green\u00a7r plain");
+await page.click("#new-thread-form [type=submit]");
+await page.waitForURL(/thread\.html/, { timeout: 30000 });
+await page.waitForSelector(".post-body.mojangles");
+ok("mojangles post uses pixel font class", true);
+const fmtText = await page.locator(".post-body").first().textContent();
+ok("command stripped from rendered body", !fmtText.includes("/mojangles"));
+ok("\u00a7 codes hidden in rendered text", !fmtText.includes("\u00a7"));
+ok("color span rendered", (await page.locator(".post-body .mc-4").count()) === 1);
+ok("bold+color combo rendered", (await page.locator(".post-body .mc-2.mc-l").count()) === 1);
 
 // ---- missing thread ----
 await page.goto(`${BASE}/thread.html?t=doesnotexist`);

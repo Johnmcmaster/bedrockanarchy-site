@@ -18,7 +18,7 @@ const API_BASE = "/api";
 
 export const POW_DIFFICULTY = 16;
 
-const STORE_KEY = "nocoords.mock.v5";
+const STORE_KEY = "nocoords.mock.v6";
 const SESSION_SECRET_KEY = "nocoords.session";
 
 /* ------------------------------------------------------------------ *
@@ -83,6 +83,7 @@ const SEED_THREADS = [
       + "would get the domain seized.",
     replies: [
       "Refreshing to see a board that just says what the rule actually is instead of pretending there is none.",
+      "\u00a77Formatting works here: \u00a7c\u00a7lred\u00a7r\u00a77, \u00a7agreen\u00a7r\u00a77, even \u00a7kmagic\u00a7r\u00a77. Type \u00a76/\u00a77 in the reply box to see commands like \u00a76/mojangles\u00a77 and \u00a76/book\u00a77.",
     ],
   },
   {
@@ -228,7 +229,10 @@ function excerptOf(body) {
     const title = body.split("\n")[0].replace(/^\/book\s*/, "").trim() || "Untitled";
     return `[book] ${title}`;
   }
-  const flat = body.replace(/\s+/g, " ").trim();
+  if (/^\/mojangles(\s|$)/.test(body)) {
+    body = body.replace(/^\/mojangles\s*/, "");
+  }
+  const flat = body.replace(/\u00a7[0-9a-fk-or]/gi, "").replace(/\s+/g, " ").trim();
   return flat.length > 180 ? `${flat.slice(0, 180)}…` : flat;
 }
 

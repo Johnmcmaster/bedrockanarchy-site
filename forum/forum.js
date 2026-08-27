@@ -77,6 +77,76 @@ function postRefs(escaped) {
     '<a class="post-ref" href="#post-$1">&gt;&gt;$1</a>');
 }
 
+/*
+ * Minecraft-style "\u00a7" formatting codes: \u00a70-\u00a7f colors, \u00a7l bold, \u00a7o italic,
+ * \u00a7n underline, \u00a7m strikethrough, \u00a7k obfuscated, \u00a7r reset. Runs on escaped
+ * HTML and skips existing tags, closing spans at tag boundaries so nesting
+ * stays valid.
+ */
+function mcFormat(html) {
+  if (!html.includes("\u00a7")) return html;
+  const state = { color: null, l: false, o: false, n: false, m: false, k: false };
+  const wrap = (text) => {
+    if (!text) return "";
+    const cls = [];
+    if (state.color) cls.push("mc-" + state.color);
+    for (const f of ["l", "o", "n", "m", "k"]) if (state[f]) cls.push("mc-" + f);
+    return cls.length ? `<span class="${cls.join(" ")}">${text}</span>` : text;
+  };
+  return html.split(/(<[^>]*>)/).map((chunk) => {
+    if (chunk.startsWith("<")) return chunk;
+    let out = "";
+    let buf = "";
+    for (let i = 0; i < chunk.length; i++) {
+      const ch = chunk[i];
+      const next = chunk[i + 1]?.toLowerCase();
+      if (ch === "\u00a7" && next && /[0-9a-fk-or]/.test(next)) {
+        out += wrap(buf);
+        buf = "";
+        i++;
+        if (/[0-9a-f]/.test(next)) {
+          state.color = next;
+          state.l = state.o = state.n = state.m = state.k = false;
+        } else if (next === "r") {
+          state.color = null;
+          state.l = state.o = state.n = state.m = state.k = false;
+        } else {
+          state[next] = true;
+        }
+      } else {
+        buf += ch;
+      }
+    }
+    return out + wrap(buf);
+  }).join("");
+}
+
+/* \u00a7k text scrambles like the game's obfuscated style. */
+const OBF_CHARS = "abcdefghijklmnopqrstuvwxyz0123456789!@#$%&*+=?";
+let obfTimer = null;
+function ensureObfuscation() {
+  if (obfTimer || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  obfTimer = setInterval(() => {
+    document.querySelectorAll(".mc-k").forEach((node) => {
+      if (!node.dataset.obf) node.dataset.obf = node.textContent;
+      node.textContent = [...node.dataset.obf]
+        .map((c) => (/\s/.test(c) ? c : OBF_CHARS[Math.floor(Math.random() * OBF_CHARS.length)]))
+        .join("");
+    });
+  }, 70);
+}
+
+/* Slash commands, offered by the composer palette. */
+const COMMANDS = [
+  { name: "book", desc: "Write a multi-page book (pages split with ---)" },
+  { name: "mojangles", desc: "Write in the pixel font" },
+];
+
+function parseMojangles(body) {
+  const m = body.match(/^\/mojangles(?:\s+([\s\S]*))?$/);
+  return m ? (m[1] ?? "").trim() : null;
+}
+
 function greentext(escaped) {
   return escaped
     .split("\n")
@@ -85,7 +155,7 @@ function greentext(escaped) {
 }
 
 function renderBody(body) {
-  return greentext(postRefs(linkify(escapeHtml(body))));
+  return greentext(mcFormat(postRefs(linkify(escapeHtml(body)))));
 }
 
 function timeAgo(timestamp) {
@@ -201,7 +271,7 @@ function bookIconSvg() {
 }
 
 function renderBookPage(text) {
-  return greentext(linkify(escapeHtml(text)));
+  return greentext(mcFormat(linkify(escapeHtml(text))));
 }
 
 /*
@@ -302,7 +372,11 @@ function openBook(book) {
       const col = cols[offset];
       const has = i < total;
       col.querySelector(".book-page-num").textContent = has ? `Page ${i + 1} of ${total}` : "";
-      col.querySelector(".book-page-text").innerHTML = has ? renderBookPage(book.pages[i]) : "";
+      const textNode = col.querySelector(".book-page-text");
+      textNode.innerHTML = has ? renderBookPage(book.pages[i]) : "";
+      textNode.classList.remove("book-write");
+      void textNode.offsetWidth;
+      textNode.classList.add("book-write");
     });
     prev.hidden = spread === 0;
     next.hidden = spread + 2 >= total;
@@ -423,6 +497,95 @@ function initComposer(form, { withSubject, submit, draftKey }) {
   if (!form) return;
 
   const bodyInput = form.querySelector("[name=body]");
+
+  // Slash-command palette: type "/" as the first thing in the box and pick
+  // a command with fuzzy matching, arrows, and Enter.
+  const palette = document.createElement("div");
+  palette.className = "cmd-palette";
+  palette.hidden = true;
+  bodyInput.insertAdjacentElement("afterend", palette);
+  let palItems = [];
+  let palIndex = 0;
+  let palDismissed = false;
+
+  function fuzzy(name, q) {
+    let i = 0;
+    const marks = [];
+    for (const ch of name) {
+      if (i < q.length && ch === q[i]) {
+        marks.push(true);
+        i++;
+      } else {
+        marks.push(false);
+      }
+    }
+    return { hit: i === q.length, marks };
+  }
+
+  function paletteQuery() {
+    const m = bodyInput.value.match(/^\/([a-z]*)$/i);
+    return m ? m[1].toLowerCase() : null;
+  }
+
+  function pickCommand(cmd) {
+    bodyInput.value = `/${cmd.name} `;
+    palette.hidden = true;
+    bodyInput.focus();
+    bodyInput.dispatchEvent(new Event("input"));
+  }
+
+  function renderPalette() {
+    const q = palDismissed ? null : paletteQuery();
+    if (q === null) {
+      palette.hidden = true;
+      return;
+    }
+    palItems = COMMANDS
+      .map((c) => ({ ...c, f: fuzzy(c.name, q) }))
+      .filter((c) => c.f.hit);
+    if (!palItems.length) {
+      palette.hidden = true;
+      return;
+    }
+    palIndex = Math.min(palIndex, palItems.length - 1);
+    palette.innerHTML = "";
+    palItems.forEach((c, i) => {
+      const name = [...c.name]
+        .map((ch, j) => (q && c.f.marks[j] ? `<b>${ch}</b>` : ch))
+        .join("");
+      const item = el(`
+        <button type="button" class="cmd-item${i === palIndex ? " cmd-item-active" : ""}">
+          <span class="cmd-name">/${name}</span>
+          <span class="cmd-desc">${escapeHtml(c.desc)}</span>
+        </button>`);
+      item.addEventListener("click", () => pickCommand(c));
+      palette.append(item);
+    });
+    palette.hidden = false;
+  }
+
+  bodyInput.addEventListener("input", () => {
+    palDismissed = false;
+    renderPalette();
+  });
+  bodyInput.addEventListener("keydown", (event) => {
+    if (palette.hidden) return;
+    if (event.key === "ArrowDown") {
+      event.preventDefault();
+      palIndex = (palIndex + 1) % palItems.length;
+      renderPalette();
+    } else if (event.key === "ArrowUp") {
+      event.preventDefault();
+      palIndex = (palIndex - 1 + palItems.length) % palItems.length;
+      renderPalette();
+    } else if ((event.key === "Enter" || event.key === "Tab") && !event.ctrlKey && !event.metaKey) {
+      event.preventDefault();
+      pickCommand(palItems[palIndex]);
+    } else if (event.key === "Escape") {
+      palDismissed = true;
+      palette.hidden = true;
+    }
+  });
 
   // Auto-grow as you type, up to half the screen.
   bodyInput.addEventListener("input", () => {
@@ -740,7 +903,13 @@ function postNode(post, isOp, opId, refresh) {
     bodyNode.remove();
     node.append(bookNode(book));
   } else {
-    bodyNode.innerHTML = renderBody(post.body);
+    const moj = parseMojangles(post.body);
+    if (moj !== null) {
+      bodyNode.classList.add("mojangles");
+      bodyNode.innerHTML = renderBody(moj);
+    } else {
+      bodyNode.innerHTML = renderBody(post.body);
+    }
   }
 
   if (admin.active && !post.removed) {
@@ -822,6 +991,7 @@ const pages = {
 const page = document.body.dataset.page;
 
 showMockNotice();
+ensureObfuscation();
 document.querySelector("#pow-difficulty")?.replaceChildren(String(POW_DIFFICULTY));
 
 // Texture probe resolves before the page paints, so overrides apply to the

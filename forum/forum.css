@@ -393,6 +393,84 @@ p {
   }
 }
 
+/* ---------- § formatting codes ---------- */
+
+.mc-0 { color: #000000; }
+.mc-1 { color: #0000aa; }
+.mc-2 { color: #00aa00; }
+.mc-3 { color: #00aaaa; }
+.mc-4 { color: #aa0000; }
+.mc-5 { color: #aa00aa; }
+.mc-6 { color: #ffaa00; }
+.mc-7 { color: #aaaaaa; }
+.mc-8 { color: #555555; }
+.mc-9 { color: #5555ff; }
+.mc-a { color: #55ff55; }
+.mc-b { color: #55ffff; }
+.mc-c { color: #ff5555; }
+.mc-d { color: #ff55ff; }
+.mc-e { color: #ffff55; }
+.mc-f { color: #ffffff; text-shadow: 0 0 1px #b5b5b5; }
+.mc-l { font-weight: 700; }
+.mc-o { font-style: italic; }
+.mc-n { text-decoration: underline; }
+.mc-m { text-decoration: line-through; }
+.mc-n.mc-m { text-decoration: underline line-through; }
+
+/* /mojangles posts render in the pixel font */
+.post-body.mojangles {
+  font-family: "Monocraft", var(--mono);
+  font-size: 15px;
+}
+
+/* ---------- slash-command palette ---------- */
+
+.cmd-palette {
+  margin-top: 6px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--white);
+  overflow: hidden;
+}
+
+.cmd-item {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  width: 100%;
+  padding: 7px 10px;
+  border: 0;
+  background: none;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.cmd-item + .cmd-item {
+  border-top: 1px solid var(--line);
+}
+
+.cmd-item-active,
+.cmd-item:hover {
+  background: #eef3ec;
+}
+
+.cmd-name {
+  font-family: "Monocraft", var(--mono);
+  font-size: 13px;
+  color: var(--link);
+}
+
+.cmd-name b {
+  color: var(--accent);
+}
+
+.cmd-desc {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+
 /* ---------- /book posts ---------- */
 
 /*
@@ -474,6 +552,7 @@ p {
   background: url("assets/book_open.png") center / 100% 100% no-repeat;
   image-rendering: pixelated;
   filter: drop-shadow(0 14px 34px rgba(0, 0, 0, 0.5));
+  animation: book-open 0.28s ease-out;
 }
 
 /* Local texture override still wins when enabled. */
@@ -537,12 +616,26 @@ p {
   to { transform: translateX(0); opacity: 1; }
 }
 
+@keyframes book-open {
+  from { transform: scale(0.3) rotate(-4deg); opacity: 0; }
+  to { transform: scale(1) rotate(0); opacity: 1; }
+}
+
+@keyframes book-write {
+  from { clip-path: inset(0 0 100% 0); }
+  to { clip-path: inset(0 0 0 0); }
+}
+
+.book-write { animation: book-write 0.55s ease-out; }
+
 .book-turn-right { animation: book-turn-right 0.16s ease-out; }
 .book-turn-left { animation: book-turn-left 0.16s ease-out; }
 
 @media (prefers-reduced-motion: reduce) {
   .book-turn-right,
-  .book-turn-left {
+  .book-turn-left,
+  .book-write,
+  .book-gui {
     animation: none;
   }
 }
