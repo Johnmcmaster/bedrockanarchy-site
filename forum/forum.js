@@ -111,6 +111,172 @@ function setStatus(node, message, isError = false) {
   node.classList.toggle("status-error", isError);
 }
 
+
+/* ------------------------------------------------------------------ *
+ * /book posts — Minecraft-style written books
+ * ------------------------------------------------------------------ */
+
+/*
+ * A post whose first line is "/book Title" renders as a clickable book.
+ * Pages are separated by a line containing only "---"; pages longer than
+ * the in-game-ish limit are split automatically. Hard cap of 50 pages.
+ *
+ * The art is original pixel work in the game's style, not Mojang's texture
+ * files — game assets are copyrighted and this site ships nothing it does
+ * not own.
+ */
+const BOOK_MAX_PAGES = 50;
+const BOOK_PAGE_CHARS = 300;
+
+function parseBook(body) {
+  if (!/^\/book(\s|$)/.test(body)) return null;
+  const lines = body.split("\n");
+  const title = lines[0].replace(/^\/book\s*/, "").trim() || "Untitled";
+  const rest = lines.slice(1).join("\n").trim();
+  const rawPages = rest ? rest.split(/\n\s*---\s*\n/) : [""];
+  const pages = [];
+
+  for (const raw of rawPages) {
+    if (pages.length >= BOOK_MAX_PAGES) break;
+    let text = raw.trim();
+    if (!text) {
+      pages.push("");
+      continue;
+    }
+    while (text.length > BOOK_PAGE_CHARS && pages.length < BOOK_MAX_PAGES - 1) {
+      let cut = text.lastIndexOf(" ", BOOK_PAGE_CHARS);
+      if (cut < BOOK_PAGE_CHARS * 0.5) cut = BOOK_PAGE_CHARS;
+      pages.push(text.slice(0, cut).trim());
+      text = text.slice(cut).trim();
+    }
+    pages.push(text);
+  }
+
+  return { title, pages: pages.slice(0, BOOK_MAX_PAGES) };
+}
+
+/* 16x16 book item, drawn as pixels. */
+const BOOK_PIXELS = [
+  "................",
+  "..BBBBBBBBBBB...",
+  ".BllbbbbbbbbBB..",
+  ".BlbbbbbbbbbBpB.",
+  ".BlbbrrbbbbbBpB.",
+  ".BlbbrrbbbbbBpB.",
+  ".BlbbrrbbbbbBpB.",
+  ".BlbbbbbbbbbBpB.",
+  ".BlbbbbbbbbbBpB.",
+  ".BlbbbbbbbbbBpB.",
+  ".BlbbbbbbbbbBpB.",
+  ".BlbbbbbbbbbBpB.",
+  ".BlbbbbbbbbbBpB.",
+  ".BBBBBBBBBBBBpB.",
+  "...BppppppppppB.",
+  "...BBBBBBBBBBB..",
+];
+const BOOK_COLORS = {
+  B: "#3b2713",
+  b: "#8a5a2b",
+  l: "#a9743a",
+  p: "#efe6cf",
+  r: "#b02e26",
+};
+
+function bookIconSvg() {
+  let rects = "";
+  BOOK_PIXELS.forEach((row, y) => {
+    [...row].forEach((ch, x) => {
+      const color = BOOK_COLORS[ch];
+      if (color) rects += `<rect x="${x}" y="${y}" width="1" height="1" fill="${color}"/>`;
+    });
+  });
+  return `<svg viewBox="0 0 16 16" width="22" height="22" shape-rendering="crispEdges" aria-hidden="true">${rects}</svg>`;
+}
+
+function renderBookPage(text) {
+  return greentext(linkify(escapeHtml(text)));
+}
+
+function bookNode(book) {
+  const node = el(`
+    <button class="book-inline" type="button" title="Read this book">
+      ${bookIconSvg()}
+      <span class="book-inline-title">${escapeHtml(book.title)}</span>
+      <span class="book-inline-pages">${book.pages.length} page${book.pages.length === 1 ? "" : "s"}</span>
+    </button>
+  `);
+  node.addEventListener("click", () => openBook(book));
+  return node;
+}
+
+const ARROW_RIGHT = `<svg viewBox="0 0 18 10" width="27" height="15" shape-rendering="crispEdges" aria-hidden="true">
+  <path fill="#5b4a36" d="M0 3h10V0h2v1h2v1h2v1h2v2h-2v1h-2v1h-2v1h-2v-3H0z"/></svg>`;
+const ARROW_LEFT = `<svg viewBox="0 0 18 10" width="27" height="15" shape-rendering="crispEdges" aria-hidden="true">
+  <path fill="#5b4a36" d="M18 3H8V0H6v1H4v1H2v1H0v2h2v1h2v1h2v1h2V5h10z"/></svg>`;
+
+function openBook(book) {
+  let index = 0;
+
+  const overlay = el(`
+    <div class="book-overlay" role="dialog" aria-modal="true" aria-label="${escapeHtml(book.title)}">
+      <div class="book-gui">
+        <div class="book-counter"></div>
+        <div class="book-page"></div>
+        <button class="book-arrow book-arrow-prev" type="button" aria-label="Previous page">${ARROW_LEFT}</button>
+        <button class="book-arrow book-arrow-next" type="button" aria-label="Next page">${ARROW_RIGHT}</button>
+        <button class="mc-button book-done" type="button">Done</button>
+      </div>
+    </div>
+  `);
+
+  const pageNode = overlay.querySelector(".book-page");
+  const counter = overlay.querySelector(".book-counter");
+  const prev = overlay.querySelector(".book-arrow-prev");
+  const next = overlay.querySelector(".book-arrow-next");
+
+  function paint(direction) {
+    counter.textContent = `Page ${index + 1} of ${book.pages.length}`;
+    pageNode.innerHTML = renderBookPage(book.pages[index]);
+    prev.hidden = index === 0;
+    next.hidden = index === book.pages.length - 1;
+    if (direction) {
+      pageNode.classList.remove("book-turn-left", "book-turn-right");
+      void pageNode.offsetWidth;
+      pageNode.classList.add(direction === 1 ? "book-turn-right" : "book-turn-left");
+    }
+  }
+
+  function flip(delta) {
+    const target = index + delta;
+    if (target < 0 || target >= book.pages.length) return;
+    index = target;
+    paint(delta);
+  }
+
+  function close() {
+    overlay.remove();
+    document.removeEventListener("keydown", onKey);
+  }
+
+  function onKey(event) {
+    if (event.key === "Escape") close();
+    if (event.key === "ArrowRight") flip(1);
+    if (event.key === "ArrowLeft") flip(-1);
+  }
+
+  prev.addEventListener("click", () => flip(-1));
+  next.addEventListener("click", () => flip(1));
+  overlay.querySelector(".book-done").addEventListener("click", close);
+  overlay.addEventListener("click", (event) => {
+    if (event.target === overlay) close();
+  });
+  document.addEventListener("keydown", onKey);
+
+  paint();
+  document.body.append(overlay);
+  overlay.querySelector(".book-done").focus();
+}
+
 /* ------------------------------------------------------------------ *
  * Admin key (removal tooling)
  * ------------------------------------------------------------------ */
@@ -494,11 +660,16 @@ function postNode(post, isOp, opId, refresh) {
 
   const bodyNode = node.querySelector(".post-body");
 
+  const book = post.removed || isSealed(post.body) ? null : parseBook(post.body);
+
   if (post.removed) {
     bodyNode.textContent = "[removed by operator]";
   } else if (isSealed(post.body)) {
     bodyNode.remove();
     node.append(sealedNode(post.body));
+  } else if (book) {
+    bodyNode.remove();
+    node.append(bookNode(book));
   } else {
     bodyNode.innerHTML = renderBody(post.body);
   }

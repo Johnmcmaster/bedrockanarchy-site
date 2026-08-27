@@ -18,7 +18,7 @@ const API_BASE = "/api";
 
 export const POW_DIFFICULTY = 16;
 
-const STORE_KEY = "nocoords.mock.v4";
+const STORE_KEY = "nocoords.mock.v5";
 const SESSION_SECRET_KEY = "nocoords.session";
 
 /* ------------------------------------------------------------------ *
@@ -114,6 +114,26 @@ const SEED_THREADS = [
     ],
   },
   {
+    boardId: "anarchy",
+    subject: "I wrote down how our base fell",
+    body:
+      "/book The Fall of Deepholm\n"
+      + "We held Deepholm for four months. This is how it ended, written so the next group "
+      + "makes different mistakes.\n"
+      + "---\n"
+      + "Rule one: we recruited from chat. That is how he got in. Friendly, helpful, always "
+      + "online at odd hours. He fixed the farms nobody wanted to fix.\n"
+      + "---\n"
+      + ">be us\n>four months of peace\n>wake up to lava in the storage hall\n\n"
+      + "He never said a word. Just left one sign: thanks for the tour.\n"
+      + "---\n"
+      + "If you take one thing from this book: the base does not fall to TNT. It falls to "
+      + "trust. Build smaller. Tell fewer people. And check who fixes your farms.",
+    replies: [
+      "Genuinely good read. The sign detail is brutal.",
+    ],
+  },
+  {
     boardId: "b",
     subject: "What are you all listening to while you dig",
     body: "600 blocks of tunnel to go. Need something.\n\n>digging straight down like it owes me money",
@@ -132,7 +152,7 @@ function randomPosterId() {
 
 function freshStore() {
   const store = { threads: [], posts: [], seq: 1 };
-  let offset = 900;
+  let offset = 1300;
 
   SEED_THREADS.forEach((seed) => {
     const threadId = `t${store.seq++}`;
@@ -203,6 +223,10 @@ function writeStore(store) {
 function excerptOf(body) {
   if (body.startsWith("nc1.")) {
     return "[sealed post]";
+  }
+  if (/^\/book(\s|$)/.test(body)) {
+    const title = body.split("\n")[0].replace(/^\/book\s*/, "").trim() || "Untitled";
+    return `[book] ${title}`;
   }
   const flat = body.replace(/\s+/g, " ").trim();
   return flat.length > 180 ? `${flat.slice(0, 180)}…` : flat;
