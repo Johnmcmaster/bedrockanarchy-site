@@ -117,6 +117,25 @@ cosmetic — the server must enforce the key on every `DELETE`.
 Speech is not moderated. The delete lever exists so illegal content can be
 pulled quickly, which is what keeps the registrar from taking the domain.
 
+## Local texture overrides (for private testing only)
+
+The book reader can use real game textures **on your own machine only**. The
+mechanism is off by default, opt-in, and the folder it reads is gitignored so
+the files can never be committed by accident.
+
+1. Extract the art from your own game copy (the client jar is a zip; book GUI
+   and item art live under `assets/minecraft/textures/`).
+2. Crop/save as:
+   - `forum/textures/book_page.png` — the open-book reading background
+   - `forum/textures/written_book.png` — the 16x16 book item icon
+3. In the browser console: `localStorage.setItem("nocoords.textures", "1")`
+   and reload. Remove the key to go back to the built-in art.
+
+**Never commit or deploy these files.** Extracting assets from a game you own
+for personal use is your business; publishing them redistributes Mojang's
+copyrighted assets and invites a DMCA takedown against the repo and the site.
+The shipped site uses only original art plus the OFL-licensed Monocraft font.
+
 ## Design notes
 
 **Proof of work instead of rate limits.** Rate-limiting by IP means storing

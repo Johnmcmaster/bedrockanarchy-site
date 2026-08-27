@@ -197,10 +197,55 @@ function renderBookPage(text) {
   return greentext(linkify(escapeHtml(text)));
 }
 
+/*
+ * Local-only texture overrides. Off by default and opt-in via
+ * localStorage.setItem("nocoords.textures", "1"), so ordinary visitors never
+ * probe for the files. When enabled, drop-in PNGs from forum/textures/
+ * replace the built-in art:
+ *
+ *   textures/book_page.png     the open-book reading background (cropped)
+ *   textures/written_book.png  the 16x16 book item icon
+ *
+ * The directory is gitignored on purpose: extracting assets from your own
+ * game copy for local use is your business, but committing or deploying
+ * them redistributes Mojang's copyrighted files. Keep them local.
+ */
+let bookTextures = null;
+
+function texturesEnabled() {
+  try {
+    return localStorage.getItem("nocoords.textures") === "1";
+  } catch {
+    return false;
+  }
+}
+
+function probeTexture(path) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => resolve(path);
+    img.onerror = () => resolve(null);
+    img.src = path;
+  });
+}
+
+async function loadBookTextures() {
+  if (!texturesEnabled()) return;
+  const [page, icon] = await Promise.all([
+    probeTexture("textures/book_page.png"),
+    probeTexture("textures/written_book.png"),
+  ]);
+  bookTextures = { page, icon };
+  if (page) document.documentElement.classList.add("has-book-page-texture");
+}
+
 function bookNode(book) {
+  const icon = bookTextures?.icon
+    ? `<img class="book-icon-img" src="${bookTextures.icon}" width="22" height="22" alt="">`
+    : bookIconSvg();
   const node = el(`
     <button class="book-inline" type="button" title="Read this book">
-      ${bookIconSvg()}
+      ${icon}
       <span class="book-inline-title">${escapeHtml(book.title)}</span>
       <span class="book-inline-pages">${book.pages.length} page${book.pages.length === 1 ? "" : "s"}</span>
     </button>
@@ -757,7 +802,9 @@ const page = document.body.dataset.page;
 showMockNotice();
 document.querySelector("#pow-difficulty")?.replaceChildren(String(POW_DIFFICULTY));
 
-pages[page]?.().catch((error) => {
+// Texture probe resolves before the page paints, so overrides apply to the
+// first render too. It is a no-op unless the local opt-in flag is set.
+loadBookTextures().then(() => pages[page]?.()).catch((error) => {
   console.error(error);
   const shell = document.querySelector("main");
   if (shell) {

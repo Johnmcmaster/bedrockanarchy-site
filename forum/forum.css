@@ -479,6 +479,23 @@ p {
   image-rendering: pixelated;
 }
 
+/* Local texture override: when forum/textures/book_page.png is present and
+   enabled, it replaces the CSS-drawn chrome entirely. */
+.has-book-page-texture .book-gui {
+  background: url("textures/book_page.png") center / 100% 100% no-repeat;
+  box-shadow: 0 16px 44px rgba(0, 0, 0, 0.5);
+  clip-path: none;
+}
+
+.has-book-page-texture .book-gui::before,
+.has-book-page-texture .book-gui::after {
+  display: none;
+}
+
+.book-icon-img {
+  image-rendering: pixelated;
+}
+
 /* Page-edge lines at the sides, hinting at the stack of pages beneath. */
 .book-gui::before,
 .book-gui::after {
