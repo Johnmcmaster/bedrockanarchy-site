@@ -122,9 +122,9 @@ function setStatus(node, message, isError = false) {
  * the in-game-ish limit are split automatically. Hard cap of 50 pages.
  *
  * The reader shows a Bedrock-style two-page spread. The open-book artwork
- * (assets/book_open.png) was supplied by the site owner as fan-made art;
- * the item icon and remaining chrome are original pixel work. No Mojang
- * texture files are shipped — game assets are copyrighted.
+ * (assets/book_open.png) and the 16x16 item icon are fan art supplied by
+ * the site owner; the remaining chrome is original work. No Mojang texture
+ * files are shipped — game assets are copyrighted.
  */
 const BOOK_MAX_PAGES = 50;
 const BOOK_PAGE_CHARS = 300;
@@ -156,31 +156,35 @@ function parseBook(body) {
   return { title, pages: pages.slice(0, BOOK_MAX_PAGES) };
 }
 
-/* 16x16 tilted book item, drawn as pixels. */
+/* 16x16 book item icon — pixel art supplied by the site owner. */
 const BOOK_PIXELS = [
-  "................",
-  "..........BBB...",
-  ".......BBBBcB...",
-  "....BBBBccccBB..",
-  ".BBBBccccccchB..",
-  "BBcccccccccccBB.",
-  "BcccccccccccchB.",
-  "BcccccccccccchB.",
-  "BBcccccccchhhhBB",
-  ".BccccchhhhddddB",
-  ".BcchhhhddddBBBB",
-  ".BBhhdddpBBBB...",
-  "..BBdpBBBB......",
-  "...BBBB.........",
-  "...B............",
-  "................",
+  "......BBB.......",
+  ".....ccdBBB.....",
+  ".....chppppBB...",
+  "....cdphhpppcBB.",
+  "....chccphhdccsx",
+  "...cdppccppcy.Bx",
+  "...chcppccpc.ycx",
+  "..cdppcpppdcycx.",
+  "..chhppcpdcy.cx.",
+  ".cddphhppcy.Bx..",
+  ".B..ddphhc.ycx..",
+  ".Bcz..dddcyBx...",
+  ".Bcdzz...y.cx...",
+  "..xxddzzzzcx....",
+  "....xxdddcBx....",
+  "......xxxxx.....",
 ];
 const BOOK_COLORS = {
-  B: "#2e1e0e",
-  c: "#805228",
-  h: "#643e1c",
-  d: "#eee4c8",
-  p: "#cbbd98",
+  B: "#4d1807",
+  c: "#391003",
+  d: "#5d2210",
+  h: "#6c2c19",
+  p: "#75321e",
+  s: "#5b5b5b",
+  x: "#161005",
+  y: "#999999",
+  z: "#d6d6d6",
 };
 
 function bookIconSvg() {
