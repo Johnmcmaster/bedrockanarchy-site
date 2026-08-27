@@ -78,9 +78,14 @@ p {
 }
 
 .wordmark {
-  font-size: 19px;
-  font-weight: 700;
-  color: var(--text);
+  display: inline-flex;
+  align-items: center;
+}
+
+.wordmark img {
+  height: 16px;
+  width: auto;
+  display: block;
 }
 
 .wordmark:hover {
