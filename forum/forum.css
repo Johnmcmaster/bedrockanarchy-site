@@ -454,15 +454,46 @@ p {
   position: relative;
   width: min(400px, 100%);
   min-height: min(480px, 86vh);
-  padding: 26px 30px 56px;
-  background: #f3ead2;
-  border: 3px solid #5b4a36;
+  padding: 28px 32px 58px;
+  /* Layered tans, darkest at the rim, like the in-game page stack. */
+  background: linear-gradient(#f6efd9, #efe6c9);
   box-shadow:
-    inset 0 0 0 3px #e0d4b4,
-    inset 0 0 0 6px #ece2c6,
-    0 14px 40px rgba(0, 0, 0, 0.45);
+    inset 0 0 0 4px #a8946a,
+    inset 0 0 0 6px #dfd2ac,
+    inset 0 0 0 8px #ede3c4,
+    0 16px 44px rgba(0, 0, 0, 0.5);
+  /* Pixel-stepped corners instead of straight ones. */
+  clip-path: polygon(
+    0 12px, 4px 12px, 4px 8px, 8px 8px, 8px 4px, 12px 4px, 12px 0,
+    calc(100% - 12px) 0, calc(100% - 12px) 4px, calc(100% - 8px) 4px,
+    calc(100% - 8px) 8px, calc(100% - 4px) 8px, calc(100% - 4px) 12px,
+    100% 12px,
+    100% calc(100% - 12px), calc(100% - 4px) calc(100% - 12px),
+    calc(100% - 4px) calc(100% - 8px), calc(100% - 8px) calc(100% - 8px),
+    calc(100% - 8px) calc(100% - 4px), calc(100% - 12px) calc(100% - 4px),
+    calc(100% - 12px) 100%,
+    12px 100%, 12px calc(100% - 4px), 8px calc(100% - 4px),
+    8px calc(100% - 8px), 4px calc(100% - 8px), 4px calc(100% - 12px),
+    0 calc(100% - 12px)
+  );
   image-rendering: pixelated;
 }
+
+/* Page-edge lines at the sides, hinting at the stack of pages beneath. */
+.book-gui::before,
+.book-gui::after {
+  content: "";
+  position: absolute;
+  top: 16px;
+  bottom: 16px;
+  width: 2px;
+  background: repeating-linear-gradient(
+    #cbbb92 0, #cbbb92 6px, #ddd0a9 6px, #ddd0a9 12px);
+  pointer-events: none;
+}
+
+.book-gui::before { left: 12px; }
+.book-gui::after { right: 12px; }
 
 .book-counter {
   text-align: right;
@@ -520,12 +551,15 @@ p {
   border: 0;
   background: none;
   cursor: pointer;
-  opacity: 0.75;
 }
 
-.book-arrow:hover,
+/* Arrows brighten on hover, the way the game's page arrows highlight. */
+.book-arrow:hover svg,
+.book-arrow:focus-visible svg {
+  filter: brightness(1.4) saturate(1.2);
+}
+
 .book-arrow:focus-visible {
-  opacity: 1;
   outline: none;
 }
 

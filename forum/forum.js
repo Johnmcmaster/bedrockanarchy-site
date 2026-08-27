@@ -210,9 +210,11 @@ function bookNode(book) {
 }
 
 const ARROW_RIGHT = `<svg viewBox="0 0 18 10" width="27" height="15" shape-rendering="crispEdges" aria-hidden="true">
-  <path fill="#5b4a36" d="M0 3h10V0h2v1h2v1h2v1h2v2h-2v1h-2v1h-2v1h-2v-3H0z"/></svg>`;
+  <path fill="#4a3a28" d="M0 3h10V0h2v1h2v1h2v1h2v2h-2v1h-2v1h-2v1h-2v-3H0z"/>
+  <path fill="#8a7350" d="M1 4h9V2h1v1h2v1h2v1h-2v1h-2v1h-1V5H1z"/></svg>`;
 const ARROW_LEFT = `<svg viewBox="0 0 18 10" width="27" height="15" shape-rendering="crispEdges" aria-hidden="true">
-  <path fill="#5b4a36" d="M18 3H8V0H6v1H4v1H2v1H0v2h2v1h2v1h2v1h2V5h10z"/></svg>`;
+  <path fill="#4a3a28" d="M18 3H8V0H6v1H4v1H2v1H0v2h2v1h2v1h2v1h2V5h10z"/>
+  <path fill="#8a7350" d="M17 4H8V2H7v1H5v1H3v1h2v1h2v1h1V5h9z"/></svg>`;
 
 function openBook(book) {
   let index = 0;
