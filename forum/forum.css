@@ -516,9 +516,9 @@ p {
   font-size: 15px;
 }
 
-/* The codes themselves stay visible but recede. */
+/* Code tokens show their own formatting, slightly faded so text stands out. */
 .e-code {
-  color: #b9beb3;
+  opacity: 0.55;
 }
 
 /* Metric-safe bold and italic: shadow-thickened and synthetically slanted,

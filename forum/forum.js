@@ -563,7 +563,6 @@ function initComposer(form, { withSubject, submit, draftKey }) {
       const next = value[i + 1]?.toLowerCase();
       if (c === "\u00a7" && next && /[0-9a-fk-or]/.test(next)) {
         flush();
-        out += `<span class="e-code">\u00a7${escapeChar(value[i + 1])}</span>`;
         i++;
         if (/[0-9a-f]/.test(next)) {
           state.color = next;
@@ -574,6 +573,15 @@ function initComposer(form, { withSubject, submit, draftKey }) {
         } else {
           state[next] = true;
         }
+        // The code token wears the formatting it introduces (minus the
+        // scramble, which would garble the code while editing it).
+        const codeCls = ["e-code"];
+        if (state.color) codeCls.push("mc-" + state.color);
+        if (state.l) codeCls.push("e-l");
+        if (state.o) codeCls.push("e-o");
+        if (state.n) codeCls.push("mc-n");
+        if (state.m) codeCls.push("mc-m");
+        out += `<span class="${codeCls.join(" ")}">\u00a7${escapeChar(value[i])}</span>`;
       } else {
         buf += escapeChar(c);
       }
