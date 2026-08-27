@@ -504,6 +504,89 @@ function initComposer(form, { withSubject, submit, draftKey }) {
   palette.className = "cmd-palette";
   palette.hidden = true;
   bodyInput.insertAdjacentElement("afterend", palette);
+
+  /*
+   * In-place live formatting. A styled backdrop sits exactly behind the
+   * textarea; when the draft uses \u00a7 codes or /mojangles the textarea's own
+   * text goes transparent (caret stays native) and the styled copy shows
+   * through. The \u00a7 codes stay visible but dimmed so every character lines
+   * up 1:1 with the caret. Bold is faked with a text-shadow and italic with
+   * synthetic oblique so glyph widths never change.
+   */
+  const editorWrap = document.createElement("div");
+  editorWrap.className = "editor-wrap";
+  bodyInput.before(editorWrap);
+  const backdrop = document.createElement("div");
+  backdrop.className = "editor-backdrop";
+  backdrop.setAttribute("aria-hidden", "true");
+  editorWrap.append(backdrop, bodyInput);
+  bodyInput.classList.add("editor-input");
+
+  function escapeChar(c) {
+    return c === "&" ? "&amp;" : c === "<" ? "&lt;" : c === ">" ? "&gt;" : c;
+  }
+
+  function renderEditor() {
+    const value = bodyInput.value;
+    const moj = /^\/mojangles(\s|$)/.test(value);
+    editorWrap.classList.toggle("mojangles-mode", moj);
+    const active = moj || value.includes("\u00a7");
+    editorWrap.classList.toggle("editor-live", active);
+    if (!active) {
+      backdrop.innerHTML = "";
+      return;
+    }
+
+    const state = { color: null, l: false, o: false, n: false, m: false, k: false };
+    let out = "";
+    let buf = "";
+    const flush = () => {
+      if (!buf) return;
+      const cls = [];
+      if (state.color) cls.push("mc-" + state.color);
+      if (state.l) cls.push("e-l");
+      if (state.o) cls.push("e-o");
+      if (state.n) cls.push("mc-n");
+      if (state.m) cls.push("mc-m");
+      if (state.k) cls.push("mc-k");
+      out += cls.length ? `<span class="${cls.join(" ")}">${buf}</span>` : buf;
+      buf = "";
+    };
+
+    let i = 0;
+    if (moj) {
+      out += `<span class="e-code">/mojangles</span>`;
+      i = "/mojangles".length;
+    }
+    for (; i < value.length; i++) {
+      const c = value[i];
+      const next = value[i + 1]?.toLowerCase();
+      if (c === "\u00a7" && next && /[0-9a-fk-or]/.test(next)) {
+        flush();
+        out += `<span class="e-code">\u00a7${escapeChar(value[i + 1])}</span>`;
+        i++;
+        if (/[0-9a-f]/.test(next)) {
+          state.color = next;
+          state.l = state.o = state.n = state.m = state.k = false;
+        } else if (next === "r") {
+          state.color = null;
+          state.l = state.o = state.n = state.m = state.k = false;
+        } else {
+          state[next] = true;
+        }
+      } else {
+        buf += escapeChar(c);
+      }
+    }
+    flush();
+    backdrop.innerHTML = out + "\n\u200b";
+    backdrop.scrollTop = bodyInput.scrollTop;
+  }
+
+  bodyInput.addEventListener("scroll", () => {
+    backdrop.scrollTop = bodyInput.scrollTop;
+  });
+
   let palItems = [];
   let palIndex = 0;
   let palDismissed = false;
@@ -567,6 +650,7 @@ function initComposer(form, { withSubject, submit, draftKey }) {
   bodyInput.addEventListener("input", () => {
     palDismissed = false;
     renderPalette();
+    renderEditor();
   });
   bodyInput.addEventListener("keydown", (event) => {
     if (palette.hidden) return;
@@ -605,7 +689,10 @@ function initComposer(form, { withSubject, submit, draftKey }) {
   if (draftKey) {
     try {
       const saved = sessionStorage.getItem(draftKey);
-      if (saved) bodyInput.value = saved;
+      if (saved) {
+        bodyInput.value = saved;
+        renderEditor();
+      }
     } catch { /* storage unavailable */ }
     bodyInput.addEventListener("input", () => {
       try {
@@ -683,6 +770,7 @@ function initComposer(form, { withSubject, submit, draftKey }) {
       await submit({ subject, body: payloadBody, proof });
 
       bodyInput.value = "";
+      renderEditor();
       bodyInput.style.height = "";
       if (passInput) passInput.value = "";
       if (draftKey) {

@@ -131,6 +131,11 @@ colors, `§l` bold, `§o` italic, `§n` underline, `§m` strikethrough, `§k`
 obfuscated (animated scramble), `§r` reset. As in the game, a color code
 resets the style flags.
 
+Formatting renders live inside the composer while typing: a styled layer sits
+behind the textarea, codes stay visible but dimmed, and /mojangles switches
+the whole box to the pixel font. Bold uses a text-shadow and italic a
+synthetic oblique so glyph widths never drift from the caret.
+
 ## Local texture overrides (for private testing only)
 
 The book reader can use real game textures **on your own machine only**. The

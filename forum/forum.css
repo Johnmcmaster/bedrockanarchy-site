@@ -470,6 +470,68 @@ p {
   color: var(--muted);
 }
 
+/* ---------- in-place live formatting editor ---------- */
+
+.editor-wrap {
+  position: relative;
+}
+
+/* Mirrors the textarea's metrics exactly so styled text sits under the caret. */
+.editor-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  padding: 8px 10px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  font-family: var(--sans);
+  font-size: 14px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  overflow: hidden;
+  color: var(--text);
+  pointer-events: none;
+}
+
+.editor-wrap .editor-input {
+  position: relative;
+  z-index: 1;
+}
+
+.editor-live .editor-backdrop {
+  background: var(--white);
+}
+
+.editor-live .editor-input {
+  color: transparent;
+  caret-color: var(--text);
+  background: transparent;
+}
+
+.mojangles-mode .editor-input,
+.mojangles-mode .editor-backdrop {
+  font-family: "Monocraft", var(--mono);
+  font-size: 15px;
+}
+
+/* The codes themselves stay visible but recede. */
+.e-code {
+  color: #b9beb3;
+}
+
+/* Metric-safe bold and italic: shadow-thickened and synthetically slanted,
+   so glyph advances match the invisible textarea text. */
+.e-l {
+  text-shadow: 0.045em 0 currentColor;
+}
+
+.e-o {
+  font-style: oblique 12deg;
+}
+
+
 
 /* ---------- /book posts ---------- */
 

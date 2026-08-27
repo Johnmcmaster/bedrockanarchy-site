@@ -212,6 +212,23 @@ ok("\u00a7 codes hidden in rendered text", !fmtText.includes("\u00a7"));
 ok("color span rendered", (await page.locator(".post-body .mc-4").count()) === 1);
 ok("bold+color combo rendered", (await page.locator(".post-body .mc-2.mc-l").count()) === 1);
 
+// ---- in-box live formatting editor ----
+await page.goto(`${BASE}/board.html?b=b`);
+await page.waitForSelector("#new-thread-form");
+const wrapSel = "#new-thread-form .editor-wrap";
+ok("editor idle for plain text", !(await page.locator(`${wrapSel}.editor-live`).count()));
+await page.fill("#body", "\u00a74red words \u00a72\u00a7lgo");
+ok("editor activates on \u00a7 codes", (await page.locator(`${wrapSel}.editor-live`).count()) === 1);
+ok("backdrop colors text live", (await page.locator(`${wrapSel} .editor-backdrop .mc-4`).textContent()) === "red words ");
+ok("codes stay visible but dimmed", (await page.locator(`${wrapSel} .editor-backdrop .e-code`).count()) === 3);
+ok("faux bold applied", (await page.locator(`${wrapSel} .editor-backdrop .mc-2.e-l`).count()) === 1);
+await page.fill("#body", "/mojangles hello");
+ok("mojangles switches box font", (await page.locator(`${wrapSel}.mojangles-mode`).count()) === 1);
+const fontNow = await page.evaluate(() => getComputedStyle(document.querySelector("#new-thread-form .editor-input")).fontFamily);
+ok("textarea itself uses Monocraft", fontNow.includes("Monocraft"));
+await page.fill("#body", "back to plain");
+ok("editor deactivates cleanly", !(await page.locator(`${wrapSel}.editor-live`).count()));
+
 // ---- missing thread ----
 await page.goto(`${BASE}/thread.html?t=doesnotexist`);
 await page.waitForSelector(".empty");
