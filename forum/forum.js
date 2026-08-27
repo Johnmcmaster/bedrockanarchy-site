@@ -156,31 +156,31 @@ function parseBook(body) {
   return { title, pages: pages.slice(0, BOOK_MAX_PAGES) };
 }
 
-/* 16x16 book item, drawn as pixels. */
+/* 16x16 tilted book item, drawn as pixels. */
 const BOOK_PIXELS = [
   "................",
-  "..BBBBBBBBBBB...",
-  ".BllbbbbbbbbBB..",
-  ".BlbbbbbbbbbBpB.",
-  ".BlbbrrbbbbbBpB.",
-  ".BlbbrrbbbbbBpB.",
-  ".BlbbrrbbbbbBpB.",
-  ".BlbbbbbbbbbBpB.",
-  ".BlbbbbbbbbbBpB.",
-  ".BlbbbbbbbbbBpB.",
-  ".BlbbbbbbbbbBpB.",
-  ".BlbbbbbbbbbBpB.",
-  ".BlbbbbbbbbbBpB.",
-  ".BBBBBBBBBBBBpB.",
-  "...BppppppppppB.",
-  "...BBBBBBBBBBB..",
+  "..........BBB...",
+  ".......BBBBcB...",
+  "....BBBBccccBB..",
+  ".BBBBccccccchB..",
+  "BBcccccccccccBB.",
+  "BcccccccccccchB.",
+  "BcccccccccccchB.",
+  "BBcccccccchhhhBB",
+  ".BccccchhhhddddB",
+  ".BcchhhhddddBBBB",
+  ".BBhhdddpBBBB...",
+  "..BBdpBBBB......",
+  "...BBBB.........",
+  "...B............",
+  "................",
 ];
 const BOOK_COLORS = {
-  B: "#3b2713",
-  b: "#8a5a2b",
-  l: "#a9743a",
-  p: "#efe6cf",
-  r: "#b02e26",
+  B: "#2e1e0e",
+  c: "#805228",
+  h: "#643e1c",
+  d: "#eee4c8",
+  p: "#cbbd98",
 };
 
 function bookIconSvg() {
