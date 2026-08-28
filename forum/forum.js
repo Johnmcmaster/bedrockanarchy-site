@@ -5,7 +5,7 @@
  * external requests at runtime.
  */
 
-import { api, isMock, posterIdFor, POW_DIFFICULTY } from "./api.js?v=2";
+import { api, isMock, posterIdFor, POW_DIFFICULTY } from "./api.js?v=3";
 import { solve } from "./pow.js";
 import { isSealed, seal, unseal } from "./crypto.js";
 
@@ -799,32 +799,46 @@ function initComposer(form, { withSubject, submit, draftKey }) {
 
 async function renderBoardIndex() {
   const target = document.querySelector("#board-grid");
-  const boards = await api.listBoards();
-
-  target.innerHTML = "";
-  boards.forEach((board) => {
-    target.append(
-      el(`
-        <a class="board-card" href="./board.html?b=${encodeURIComponent(board.id)}" title="${escapeHtml(board.description)}">
-          <span class="board-slug">/${escapeHtml(board.id)}/</span>
-          <h2>${escapeHtml(board.name)}</h2>
-          <p>${escapeHtml(board.description)}</p>
-          <span class="board-stat">${board.threadCount} thread${board.threadCount === 1 ? "" : "s"}</span>
-        </a>
-      `)
-    );
-  });
-
   const recentTarget = document.querySelector("#recent-threads");
-  const recent = (await api.listThreads(null)).slice(0, 6);
+  let lastSnapshot = null;
 
-  recentTarget.innerHTML = "";
-  if (!recent.length) {
-    recentTarget.append(el(`<p class="empty">Nothing posted yet.</p>`));
-    return;
+  async function paint() {
+    const boards = await api.listBoards();
+    const recent = (await api.listThreads(null)).slice(0, 6);
+    const snapshot = JSON.stringify([boards, recent]);
+    if (snapshot === lastSnapshot) return;
+    lastSnapshot = snapshot;
+
+    target.innerHTML = "";
+    boards.forEach((board) => {
+      target.append(
+        el(`
+          <a class="board-card" href="./board.html?b=${encodeURIComponent(board.id)}" title="${escapeHtml(board.description)}">
+            <span class="board-slug">/${escapeHtml(board.id)}/</span>
+            <h2>${escapeHtml(board.name)}</h2>
+            <p>${escapeHtml(board.description)}</p>
+            <span class="board-stat">${board.threadCount} thread${board.threadCount === 1 ? "" : "s"}</span>
+          </a>
+        `)
+      );
+    });
+
+    recentTarget.innerHTML = "";
+    if (!recent.length) {
+      recentTarget.append(el(`<p class="empty">Nothing posted yet.</p>`));
+      return;
+    }
+    recent.forEach((thread) => recentTarget.append(threadRow(thread)));
   }
 
-  recent.forEach((thread) => recentTarget.append(threadRow(thread)));
+  await paint();
+
+  setInterval(() => {
+    if (!document.hidden) paint().catch(() => {});
+  }, 10000);
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden) paint().catch(() => {});
+  });
 }
 
 function threadRow(thread) {
@@ -856,9 +870,13 @@ async function renderBoard() {
   document.querySelector("#board-description").textContent = board.description;
 
   const list = document.querySelector("#thread-list");
+  let lastSnapshot = null;
 
   async function paint() {
     const threads = await api.listThreads(board.id);
+    const snapshot = JSON.stringify(threads);
+    if (snapshot === lastSnapshot) return;
+    lastSnapshot = snapshot;
     list.innerHTML = "";
     if (!threads.length) {
       list.append(el(`<p class="empty">No threads on this board yet. Start one.</p>`));
@@ -868,6 +886,14 @@ async function renderBoard() {
   }
 
   await paint();
+
+  // New threads, bumps, and scores appear on their own.
+  setInterval(() => {
+    if (!document.hidden) paint().catch(() => {});
+  }, 8000);
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden) paint().catch(() => {});
+  });
 
   initComposer(document.querySelector("#new-thread-form"), {
     withSubject: true,
@@ -908,19 +934,44 @@ async function renderThread() {
   // A real backend derives poster IDs server-side and reports yours as `you`;
   // the mock has no server, so it falls back to the local derivation.
   const yourId = data.you ?? (await posterIdFor(thread.id));
+  let lastSnapshot = "";
   document.querySelector("#your-id").textContent = yourId;
   const yourName = document.querySelector("#your-name");
   if (yourName) yourName.textContent = handleFor(yourId);
 
-  async function paint() {
-    const current = await api.getThread(thread.id);
+  async function paint(fresh) {
+    const current = fresh ?? (await api.getThread(thread.id));
+    if (!current) return;
+    lastSnapshot = JSON.stringify(current.posts);
     const opId = current.posts[0]?.posterId;
 
     postList.innerHTML = "";
     current.posts.forEach((post, index) => postList.append(postNode(post, index === 0, opId, paint)));
+
+    if (info) {
+      const replies = current.posts.length - 1;
+      info.textContent = `${replies} repl${replies === 1 ? "y" : "ies"} · started ${timeAgo(thread.createdAt)}`;
+    }
   }
 
-  await paint();
+  await paint(data);
+
+  // Live updates: poll and repaint only when something actually changed, so
+  // replies and votes from other people show up on their own. Sleeps while
+  // the tab is hidden.
+  async function pollThread() {
+    if (document.hidden) return;
+    try {
+      const current = await api.getThread(thread.id);
+      if (current && JSON.stringify(current.posts) !== lastSnapshot) {
+        await paint(current);
+      }
+    } catch { /* transient network hiccup; next tick retries */ }
+  }
+  setInterval(pollThread, 4000);
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden) pollThread();
+  });
 
   const list = document.querySelector("#post-list");
   list.addEventListener("click", (event) => {
