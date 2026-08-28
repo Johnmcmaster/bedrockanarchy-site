@@ -4,6 +4,12 @@
 name: Upload forum plugin
 
 on:
+  # workflow_dispatch only registers from the default branch, so until this
+  # branch merges, pushes touching the jar (or this file) trigger the upload.
+  push:
+    paths:
+      - forum/backend-plugin/dist/**
+      - .github/workflows/deploy-plugin.yml
   workflow_dispatch:
     inputs:
       remote_dir:
