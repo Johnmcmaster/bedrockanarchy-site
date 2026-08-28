@@ -43,6 +43,15 @@ The privacy rules from the main README are enforced in code, not policy:
      proxy. (Stored nowhere either way.)
 3. Restart again. Forum data lives in `plugins/NoCoordsForum/data.json`.
 
+## Running on Nukkit-family servers
+
+`dist/nocoords-backend-nukkit-1.0.0.jar` is the same backend with a
+Nukkit/PowerNukkit entry point, for Bedrock servers that load Java plugins.
+Drop it in `plugins/`; configuration is `plugins/NoCoordsForum/config.properties`
+(same keys as the standalone properties file below). Ship only the variant
+matching your server software — the other one logs a load error and is
+ignored, but there is no reason to keep both.
+
 ## Running standalone
 
 The same jar is its own process for anything that can run Java — including
