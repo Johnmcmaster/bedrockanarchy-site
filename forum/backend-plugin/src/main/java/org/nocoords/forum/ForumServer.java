@@ -39,6 +39,10 @@ public final class ForumServer {
   private static final int MAX_REQUEST_BYTES = 64 * 1024;
   private static final int MAX_BODY_CHARS = 8000;
   private static final int MAX_SUBJECT_CHARS = 120;
+  // Votes cost proof of work like everything else, just less of it: cheap
+  // enough to feel instant on a phone, expensive enough that mass-voting
+  // burns real CPU.
+  private static final int VOTE_DIFFICULTY = 12;
 
   private final ForumConfig config;
   private final Logger logger;
@@ -127,14 +131,17 @@ public final class ForumServer {
       }
       case "challenge" -> {
         if (parts.length == 2 && method.equals("GET")) {
-          String seed = pow.issue();
+          String query = exchange.getRequestURI().getQuery();
+          boolean forVote = query != null && query.contains("kind=vote");
+          int difficulty = forVote ? Math.min(VOTE_DIFFICULTY, pow.difficulty()) : pow.difficulty();
+          String seed = pow.issue(difficulty);
           if (seed == null) {
             sendError(exchange, 429, "Too many outstanding challenges. Try again shortly.");
             return;
           }
           Map<String, Object> out = new LinkedHashMap<>();
           out.put("seed", seed);
-          out.put("difficulty", (long) pow.difficulty());
+          out.put("difficulty", (long) difficulty);
           sendJson(exchange, 200, out);
         } else {
           sendError(exchange, 404, "Not found.");
@@ -157,6 +164,8 @@ public final class ForumServer {
       case "posts" -> {
         if (parts.length == 3 && method.equals("DELETE")) {
           removePost(exchange, parts[2]);
+        } else if (parts.length == 4 && parts[3].equals("vote") && method.equals("POST")) {
+          vote(exchange, parts[2]);
         } else {
           sendError(exchange, 404, "Not found.");
         }
@@ -173,7 +182,48 @@ public final class ForumServer {
     }
     // The requester's own ID in this thread, so the composer can show it.
     // The IP goes into the HMAC and nowhere else.
-    out.put("you", posterIds.idFor(threadId, clientIp(exchange)));
+    String ip = clientIp(exchange);
+    out.put("you", posterIds.idFor(threadId, ip));
+    if (out.get("posts") instanceof List<?> posts) {
+      for (Object item : posts) {
+        if (item instanceof Map<?, ?> post) {
+          @SuppressWarnings("unchecked")
+          Map<String, Object> map = (Map<String, Object>) post;
+          String postId = (String) map.get("id");
+          map.put("yourVote", store.voteOf(postId, voterTag(postId, ip)));
+        }
+      }
+    }
+    sendJson(exchange, 200, out);
+  }
+
+  /** Per-post voter tag: same rotating HMAC as poster IDs, different scope. */
+  private String voterTag(String postId, String ip) {
+    return posterIds.idFor("vote|" + postId, ip);
+  }
+
+  private void vote(HttpExchange exchange, String postId) throws IOException {
+    Map<String, Object> body = readJsonObject(exchange);
+    if (body == null) {
+      return;
+    }
+    if (!checkProof(exchange, body, VOTE_DIFFICULTY)) {
+      return;
+    }
+    Object raw = body.get("value");
+    long value = raw instanceof Long l ? l : raw instanceof Double d ? (long) (double) d : 99;
+    if (value != 1 && value != -1 && value != 0) {
+      sendError(exchange, 400, "Vote must be 1, -1, or 0.");
+      return;
+    }
+    String ip = clientIp(exchange);
+    String tag = voterTag(postId, ip);
+    Map<String, Object> out = store.vote(postId, tag, value);
+    if (out == null) {
+      sendError(exchange, 404, "Post not found.");
+      return;
+    }
+    out.put("yourVote", store.voteOf(postId, tag));
     sendJson(exchange, 200, out);
   }
 
@@ -343,11 +393,16 @@ public final class ForumServer {
    * ---------------------------------------------------------------- */
 
   private boolean checkProof(HttpExchange exchange, Map<String, Object> body) throws IOException {
+    return checkProof(exchange, body, pow.difficulty());
+  }
+
+  private boolean checkProof(HttpExchange exchange, Map<String, Object> body, int minDifficulty)
+      throws IOException {
     Object proofValue = body.get("proof");
     if (proofValue instanceof Map<?, ?> proof) {
       String seed = asString(proof.get("seed"));
       String nonce = nonceString(proof.get("nonce"));
-      if (pow.verify(seed, nonce)) {
+      if (pow.verify(seed, nonce, minDifficulty)) {
         return true;
       }
     }

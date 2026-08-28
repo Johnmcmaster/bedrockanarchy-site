@@ -11,7 +11,7 @@
  * anyone else, because there is no server.
  */
 
-import { verify as verifyPow } from "./pow.js";
+import { solve as solvePow, verify as verifyPow } from "./pow.js";
 
 /*
  * On nocoords.org the backend plugin serves these very pages, so the real API
@@ -58,6 +58,22 @@ export async function posterIdFor(threadId) {
   const data = new TextEncoder().encode(`${sessionSecret()}:${threadId}`);
   const hash = new Uint8Array(await crypto.subtle.digest("SHA-256", data));
   return Array.from(hash.slice(0, 3), (b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+/* Mock-only voter tag, same shape as the server's rotating-HMAC one. */
+async function voterTagFor(postId) {
+  return posterIdFor(`vote|${postId}`);
+}
+
+function voteCounts(post) {
+  const votes = post.votes ?? {};
+  let ups = 0;
+  let downs = 0;
+  for (const value of Object.values(votes)) {
+    if (value > 0) ups += 1;
+    else if (value < 0) downs += 1;
+  }
+  return { ups, downs };
 }
 
 /* ------------------------------------------------------------------ *
@@ -264,10 +280,12 @@ const mockBackend = {
       .map((thread) => {
         const posts = store.posts.filter((post) => post.threadId === thread.id);
         const op = posts[0];
+        const counts = op ? voteCounts(op) : { ups: 0, downs: 0 };
         return {
           ...thread,
           replyCount: Math.max(posts.length - 1, 0),
           excerpt: op && !op.removed ? excerptOf(op.body) : "[removed]",
+          score: counts.ups - counts.downs,
         };
       });
   },
@@ -278,10 +296,31 @@ const mockBackend = {
     if (!thread) {
       return null;
     }
-    const posts = store.posts
-      .filter((post) => post.threadId === threadId)
-      .sort((a, b) => a.createdAt - b.createdAt);
+    const posts = await Promise.all(
+      store.posts
+        .filter((post) => post.threadId === threadId)
+        .sort((a, b) => a.createdAt - b.createdAt)
+        .map(async (post) => ({
+          ...post,
+          ...voteCounts(post),
+          yourVote: (post.votes ?? {})[await voterTagFor(post.id)] ?? 0,
+        }))
+    );
     return { thread, posts };
+  },
+
+  async vote(postId, value) {
+    const store = readStore();
+    const post = store.posts.find((item) => item.id === postId);
+    if (!post || post.removed) {
+      throw new Error("Post not found.");
+    }
+    post.votes = post.votes ?? {};
+    const tag = await voterTagFor(postId);
+    if (value === 0) delete post.votes[tag];
+    else post.votes[tag] = value > 0 ? 1 : -1;
+    writeStore(store);
+    return { ...voteCounts(post), yourVote: post.votes[tag] ?? 0 };
   },
 
   async challenge() {
@@ -406,6 +445,15 @@ const httpBackend = {
       method: "DELETE",
       headers: { "X-Admin-Key": adminKey },
     }),
+  // Vote challenges are much easier than posting ones, so this solves
+  // in-line — a blink, even on a phone.
+  vote: async (postId, value) => {
+    const proof = await solvePow(await request("/challenge?kind=vote"));
+    return request(`/posts/${encodeURIComponent(postId)}/vote`, {
+      method: "POST",
+      body: JSON.stringify({ value, proof }),
+    });
+  },
   reset: async () => {},
 };
 

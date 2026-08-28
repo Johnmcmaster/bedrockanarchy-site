@@ -3,7 +3,7 @@ plugins {
 }
 
 group = 'org.nocoords'
-version = '1.0.1'
+version = '1.1.0'
 
 // The Nukkit entry point compiles against a minimal stub of PluginBase
 // (src/nukkit-stub); the stub itself must never ship in the jar, where it

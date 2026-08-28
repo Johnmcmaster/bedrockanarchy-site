@@ -49,6 +49,8 @@ public final class Store {
     String body;
     long createdAt;
     boolean removed;
+    // Voter tag (rotating-secret HMAC, same privacy budget as posterId) -> ±1.
+    final LinkedHashMap<String, Long> votes = new LinkedHashMap<>();
   }
 
   private static final Pattern BOOK = Pattern.compile("^/book(\\s|$)");
@@ -105,6 +107,11 @@ public final class Store {
       post.body = (String) data.get("body");
       post.createdAt = asLong(data.get("createdAt"), 0);
       post.removed = Boolean.TRUE.equals(data.get("removed"));
+      if (data.get("votes") instanceof Map<?, ?> votes) {
+        for (Map.Entry<?, ?> vote : votes.entrySet()) {
+          post.votes.put((String) vote.getKey(), asLong(vote.getValue(), 0));
+        }
+      }
       posts.add(post);
     }
     if (boards.isEmpty()) {
@@ -148,7 +155,11 @@ public final class Store {
     root.put("threads", threadList);
     List<Object> postList = new ArrayList<>();
     for (Post post : posts) {
-      postList.add(postJson(post));
+      Map<String, Object> data = postJson(post);
+      data.remove("ups");
+      data.remove("downs");
+      data.put("votes", new LinkedHashMap<>(post.votes));
+      postList.add(data);
     }
     root.put("posts", postList);
 
@@ -198,6 +209,7 @@ public final class Store {
       Map<String, Object> data = threadJson(thread);
       data.put("replyCount", (long) Math.max(threadPosts.size() - 1, 0));
       data.put("excerpt", op != null && !op.removed ? excerptOf(op.body) : "[removed]");
+      data.put("score", op == null ? 0L : scoreOf(op));
       out.add(data);
     }
     return out;
@@ -287,6 +299,55 @@ public final class Store {
     save();
   }
 
+  /**
+   * Record a vote (+1, -1, or 0 to clear) under a voter tag. One tag holds
+   * one vote per post; voting again overwrites. Returns the updated
+   * {ups, downs} counts, or null if the post is missing or removed.
+   */
+  public synchronized Map<String, Object> vote(String postId, String tag, long value)
+      throws IOException {
+    for (Post post : posts) {
+      if (post.id.equals(postId)) {
+        if (post.removed) {
+          return null;
+        }
+        if (value == 0) {
+          post.votes.remove(tag);
+        } else {
+          post.votes.put(tag, value > 0 ? 1L : -1L);
+        }
+        save();
+        Map<String, Object> out = new LinkedHashMap<>();
+        out.put("ups", ups(post));
+        out.put("downs", downs(post));
+        return out;
+      }
+    }
+    return null;
+  }
+
+  /** The vote a tag currently holds on a post: 1, -1, or 0. */
+  public synchronized long voteOf(String postId, String tag) {
+    for (Post post : posts) {
+      if (post.id.equals(postId)) {
+        return post.votes.getOrDefault(tag, 0L);
+      }
+    }
+    return 0;
+  }
+
+  private static long ups(Post post) {
+    return post.votes.values().stream().filter(v -> v > 0).count();
+  }
+
+  private static long downs(Post post) {
+    return post.votes.values().stream().filter(v -> v < 0).count();
+  }
+
+  private static long scoreOf(Post post) {
+    return ups(post) - downs(post);
+  }
+
   private ForumThread findThread(String threadId) {
     for (ForumThread thread : threads) {
       if (thread.id.equals(threadId)) {
@@ -324,6 +385,8 @@ public final class Store {
     data.put("body", post.body);
     data.put("createdAt", post.createdAt);
     data.put("removed", post.removed);
+    data.put("ups", ups(post));
+    data.put("downs", downs(post));
     return data;
   }
 

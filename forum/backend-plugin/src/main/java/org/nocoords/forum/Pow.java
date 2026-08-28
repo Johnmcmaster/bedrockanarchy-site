@@ -19,8 +19,10 @@ public final class Pow {
   private static final long SEED_TTL_MS = 5 * 60_000;
   private static final int MAX_OUTSTANDING = 100_000;
 
+  private record Seed(long expiry, int difficulty) {}
+
   private final SecureRandom random = new SecureRandom();
-  private final Map<String, Long> seeds = new ConcurrentHashMap<>();
+  private final Map<String, Seed> seeds = new ConcurrentHashMap<>();
   private final int difficulty;
 
   public Pow(int difficulty) {
@@ -31,8 +33,12 @@ public final class Pow {
     return difficulty;
   }
 
-  /** Issue a fresh seed, or null if the outstanding-seed table is full. */
-  public String issue() {
+  /**
+   * Issue a fresh seed at the given difficulty, or null if the
+   * outstanding-seed table is full. The difficulty is remembered per seed, so
+   * an easy seed can never be spent on an action that demands a harder one.
+   */
+  public String issue(int seedDifficulty) {
     purgeExpired();
     if (seeds.size() >= MAX_OUTSTANDING) {
       return null;
@@ -40,28 +46,42 @@ public final class Pow {
     byte[] bytes = new byte[12];
     random.nextBytes(bytes);
     String seed = hex(bytes);
-    seeds.put(seed, System.currentTimeMillis() + SEED_TTL_MS);
+    seeds.put(seed, new Seed(System.currentTimeMillis() + SEED_TTL_MS, seedDifficulty));
     return seed;
   }
 
-  /** Verify and consume a solution. A seed can only ever be spent once. */
-  public boolean verify(String seed, String nonce) {
+  public String issue() {
+    return issue(difficulty);
+  }
+
+  /**
+   * Verify and consume a solution. A seed can only ever be spent once, and
+   * only on an action requiring at most the difficulty it was issued for.
+   */
+  public boolean verify(String seed, String nonce, int minDifficulty) {
     if (seed == null || nonce == null) {
       return false;
     }
-    Long expiry = seeds.remove(seed);
-    if (expiry == null || expiry < System.currentTimeMillis()) {
+    Seed issued = seeds.remove(seed);
+    if (issued == null || issued.expiry() < System.currentTimeMillis()) {
+      return false;
+    }
+    if (issued.difficulty() < minDifficulty) {
       return false;
     }
     byte[] hash = sha256((seed + ":" + nonce).getBytes(StandardCharsets.UTF_8));
-    return leadingZeroBits(hash) >= difficulty;
+    return leadingZeroBits(hash) >= issued.difficulty();
+  }
+
+  public boolean verify(String seed, String nonce) {
+    return verify(seed, nonce, difficulty);
   }
 
   private void purgeExpired() {
     long now = System.currentTimeMillis();
-    Iterator<Map.Entry<String, Long>> it = seeds.entrySet().iterator();
+    Iterator<Map.Entry<String, Seed>> it = seeds.entrySet().iterator();
     while (it.hasNext()) {
-      if (it.next().getValue() < now) {
+      if (it.next().getValue().expiry() < now) {
         it.remove();
       }
     }

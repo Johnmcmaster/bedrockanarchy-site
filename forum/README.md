@@ -56,14 +56,28 @@ GET    /api/boards
        -> [{ id, name, description, threadCount }]
 
 GET    /api/boards/:boardId/threads
-       -> [{ id, boardId, subject, excerpt, replyCount, createdAt, bumpedAt }]
+       -> [{ id, boardId, subject, excerpt, replyCount, score, createdAt,
+             bumpedAt }]              score = OP post ups minus downs
           sorted by bumpedAt desc
+
+GET    /api/threads
+       -> same shape, every board    (the home page's recent list)
 
 GET    /api/threads/:threadId
        -> { thread: { id, boardId, subject, createdAt, bumpedAt },
-            posts: [{ id, threadId, posterId, body, createdAt, removed }],
+            posts: [{ id, threadId, posterId, body, createdAt, removed,
+                      ups, downs, yourVote }],
             you }                     you = the requester's poster ID in this
           sorted by createdAt asc     thread (real backend only; mock omits it)
+
+GET    /api/challenge?kind=vote
+       -> { seed, difficulty }        easier challenge, spendable only on votes
+
+POST   /api/posts/:postId/vote
+       <- { value: 1 | -1 | 0, proof: { seed, nonce } }
+       -> { ups, downs, yourVote }    0 takes your vote back; one vote per
+                                      visitor per post, deduped by the same
+                                      rotating-HMAC tag scheme as poster IDs
 
 GET    /api/challenge
        -> { seed, difficulty }        seed must be single-use and expire (~5 min)

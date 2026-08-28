@@ -833,6 +833,7 @@ function threadRow(thread) {
       <h3><a href="./thread.html?t=${encodeURIComponent(thread.id)}">${escapeHtml(thread.subject)}</a></h3>
       <p class="thread-excerpt">${escapeHtml(thread.excerpt)}</p>
       <div class="thread-meta">
+        <span class="thread-score${(thread.score ?? 0) < 0 ? " thread-score-neg" : ""}">▲ ${thread.score ?? 0}</span>
         <span>/${escapeHtml(thread.boardId)}/</span>
         <span>${thread.replyCount} repl${thread.replyCount === 1 ? "y" : "ies"}</span>
         <span>bumped ${timeAgo(thread.bumpedAt)}</span>
@@ -989,6 +990,49 @@ function postNode(post, isOp, opId, refresh) {
   // CSSOM, not a style attribute: the pages' CSP (style-src 'self') blocks
   // inline style markup but allows script-set styles.
   node.querySelector(".poster-name").style.color = handleColor(post.posterId);
+
+  if (!post.removed) {
+    const box = el(`
+      <span class="vote-box">
+        <button type="button" class="vote vote-up" title="Good post">▲</button>
+        <span class="vote-score">0</span>
+        <button type="button" class="vote vote-down" title="Bad post">▼</button>
+      </span>
+    `);
+    const upBtn = box.querySelector(".vote-up");
+    const downBtn = box.querySelector(".vote-down");
+    const scoreEl = box.querySelector(".vote-score");
+    let votes = { ups: post.ups ?? 0, downs: post.downs ?? 0, yourVote: post.yourVote ?? 0 };
+
+    const paintVotes = () => {
+      const score = votes.ups - votes.downs;
+      scoreEl.textContent = String(score);
+      scoreEl.classList.toggle("vote-score-neg", score < 0);
+      upBtn.classList.toggle("vote-active", votes.yourVote === 1);
+      downBtn.classList.toggle("vote-active", votes.yourVote === -1);
+    };
+
+    // Tapping your current vote takes it back; tapping the other side
+    // switches. One vote per person per post, enforced server-side.
+    const cast = async (direction) => {
+      const next = votes.yourVote === direction ? 0 : direction;
+      upBtn.disabled = true;
+      downBtn.disabled = true;
+      try {
+        const out = await api.vote(post.id, next);
+        votes = { ups: out.ups, downs: out.downs, yourVote: out.yourVote };
+        paintVotes();
+      } catch {
+        /* vote failed; leave the shown state as it was */
+      }
+      upBtn.disabled = false;
+      downBtn.disabled = false;
+    };
+    upBtn.addEventListener("click", () => cast(1));
+    downBtn.addEventListener("click", () => cast(-1));
+    paintVotes();
+    node.querySelector(".post-meta").append(box);
+  }
 
   const bodyNode = node.querySelector(".post-body");
 

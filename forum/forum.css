@@ -284,6 +284,53 @@ p {
 }
 
 .thread-meta,
+.vote-box {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  margin-left: auto;
+}
+
+.vote {
+  background: none;
+  border: 0;
+  padding: 2px 5px;
+  cursor: pointer;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1;
+}
+
+.vote:hover {
+  color: var(--text);
+}
+
+.vote:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.vote-up.vote-active {
+  color: var(--accent);
+}
+
+.vote-down.vote-active {
+  color: var(--danger);
+}
+
+.vote-score {
+  min-width: 16px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.vote-score-neg,
+.thread-score-neg {
+  color: var(--danger);
+}
+
 .post-meta {
   display: flex;
   flex-wrap: wrap;
