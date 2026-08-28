@@ -15,6 +15,8 @@ import java.nio.file.Path;
  *                      reverse proxy (e.g. "CF-Connecting-IP" on Cloudflare);
  *                      empty means use the socket address
  * @param dataFile      where the JSON data file lives
+ * @param siteDir       folder of static site files to serve on every path
+ *                      outside /api, or null to serve the API only
  */
 public record ForumConfig(
     String bind,
@@ -23,4 +25,20 @@ public record ForumConfig(
     String allowedOrigin,
     int powDifficulty,
     String proxyIpHeader,
-    Path dataFile) {}
+    Path dataFile,
+    Path siteDir) {
+
+  /**
+   * An explicit setting wins; otherwise the conventional folder is served if
+   * it exists, and with neither the server is API-only.
+   */
+  public static Path resolveSiteDir(String configured, Path conventional) {
+    if (configured != null && !configured.isBlank()) {
+      return Path.of(configured.trim());
+    }
+    if (conventional != null && java.nio.file.Files.isDirectory(conventional)) {
+      return conventional;
+    }
+    return null;
+  }
+}

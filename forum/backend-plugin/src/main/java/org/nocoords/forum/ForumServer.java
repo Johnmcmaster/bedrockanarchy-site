@@ -7,6 +7,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -109,7 +111,7 @@ public final class ForumServer {
     // Split "/api/boards/b/threads" into ["api", "boards", "b", "threads"].
     String[] parts = path.replaceAll("^/+|/+$", "").split("/");
     if (parts.length < 2 || !parts[0].equals("api")) {
-      sendError(exchange, 404, "Not found.");
+      serveStatic(exchange, path);
       return;
     }
 
@@ -139,7 +141,10 @@ public final class ForumServer {
         }
       }
       case "threads" -> {
-        if (parts.length == 2 && method.equals("POST")) {
+        if (parts.length == 2 && method.equals("GET")) {
+          // Every board's threads, bump-sorted — the home page's recent list.
+          sendJson(exchange, 200, store.listThreads(null));
+        } else if (parts.length == 2 && method.equals("POST")) {
           createThread(exchange);
         } else if (parts.length == 3 && method.equals("GET")) {
           getThread(exchange, parts[2]);
@@ -250,6 +255,87 @@ public final class ForumServer {
     Map<String, Object> out = new LinkedHashMap<>();
     out.put("removed", Boolean.TRUE);
     sendJson(exchange, 200, out);
+  }
+
+  /* ---------------------------------------------------------------- *
+   * Static site
+   *
+   * With site-dir configured, everything outside /api serves the forum's
+   * own pages, so the site and its API share one origin — no CORS in play,
+   * and the pages get their CSP as a real response header (the only place
+   * frame-ancestors works). Files are read from disk per request; the site
+   * is a handful of small files and this keeps live-editing possible.
+   * ---------------------------------------------------------------- */
+
+  private static final Map<String, String> CONTENT_TYPES =
+      Map.ofEntries(
+          Map.entry("html", "text/html; charset=utf-8"),
+          Map.entry("css", "text/css; charset=utf-8"),
+          Map.entry("js", "text/javascript; charset=utf-8"),
+          Map.entry("mjs", "text/javascript; charset=utf-8"),
+          Map.entry("json", "application/json; charset=utf-8"),
+          Map.entry("txt", "text/plain; charset=utf-8"),
+          Map.entry("md", "text/plain; charset=utf-8"),
+          Map.entry("svg", "image/svg+xml"),
+          Map.entry("png", "image/png"),
+          Map.entry("jpg", "image/jpeg"),
+          Map.entry("jpeg", "image/jpeg"),
+          Map.entry("webp", "image/webp"),
+          Map.entry("gif", "image/gif"),
+          Map.entry("ico", "image/x-icon"),
+          Map.entry("woff2", "font/woff2"),
+          Map.entry("woff", "font/woff"),
+          Map.entry("webm", "video/webm"),
+          Map.entry("mp4", "video/mp4"));
+
+  private static final String PAGE_CSP =
+      "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; "
+          + "connect-src 'self'; form-action 'none'; base-uri 'none'; frame-ancestors 'none'";
+
+  private void serveStatic(HttpExchange exchange, String path) throws IOException {
+    Path root = config.siteDir();
+    if (root == null) {
+      sendError(exchange, 404, "Not found.");
+      return;
+    }
+    if (!exchange.getRequestMethod().equals("GET")
+        && !exchange.getRequestMethod().equals("HEAD")) {
+      sendError(exchange, 405, "Method not allowed.");
+      return;
+    }
+    root = root.toAbsolutePath().normalize();
+    String clean = path.endsWith("/") ? path + "index.html" : path;
+    Path file = root.resolve(clean.substring(1)).normalize();
+    if (!file.startsWith(root) || !Files.isRegularFile(file)) {
+      sendError(exchange, 404, "Not found.");
+      return;
+    }
+    String name = file.getFileName().toString();
+    int dot = name.lastIndexOf('.');
+    String type =
+        CONTENT_TYPES.getOrDefault(
+            dot >= 0 ? name.substring(dot + 1).toLowerCase() : "", "application/octet-stream");
+
+    var headers = exchange.getResponseHeaders();
+    headers.set("Content-Type", type);
+    headers.set("Referrer-Policy", "no-referrer");
+    headers.set("X-Content-Type-Options", "nosniff");
+    headers.set("Strict-Transport-Security", "max-age=31536000");
+    if (type.startsWith("text/html")) {
+      headers.set("Content-Security-Policy", PAGE_CSP);
+      headers.set("Cache-Control", "no-cache");
+    } else {
+      headers.set("Cache-Control", "public, max-age=3600");
+    }
+    byte[] bytes = Files.readAllBytes(file);
+    if (exchange.getRequestMethod().equals("HEAD")) {
+      exchange.sendResponseHeaders(200, -1);
+      return;
+    }
+    exchange.sendResponseHeaders(200, bytes.length);
+    try (OutputStream out = exchange.getResponseBody()) {
+      out.write(bytes);
+    }
   }
 
   /* ---------------------------------------------------------------- *

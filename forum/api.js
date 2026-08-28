@@ -13,7 +13,18 @@
 
 import { verify as verifyPow } from "./pow.js";
 
-const BACKEND = "mock"; // "mock" | "http"
+/*
+ * On nocoords.org the backend plugin serves these very pages, so the real API
+ * lives at the same origin. Anywhere else (local dev, tests, previews) the
+ * mock keeps working. localStorage "nocoords.backend" forces either mode.
+ */
+const BACKEND = (() => {
+  try {
+    const forced = localStorage.getItem("nocoords.backend");
+    if (forced === "mock" || forced === "http") return forced;
+  } catch { /* storage unavailable */ }
+  return location.hostname.endsWith("nocoords.org") ? "http" : "mock";
+})(); // "mock" | "http"
 const API_BASE = "/api";
 
 export const POW_DIFFICULTY = 16;
@@ -377,7 +388,10 @@ async function request(path, options = {}) {
 
 const httpBackend = {
   listBoards: () => request("/boards"),
-  listThreads: (boardId) => request(`/boards/${encodeURIComponent(boardId)}/threads`),
+  listThreads: (boardId) =>
+    boardId == null
+      ? request("/threads") // all boards, for the home page's recent list
+      : request(`/boards/${encodeURIComponent(boardId)}/threads`),
   getThread: (threadId) => request(`/threads/${encodeURIComponent(threadId)}`),
   challenge: () => request("/challenge"),
   createThread: (payload) =>

@@ -17,6 +17,11 @@ allowed-origin: "*"
 # Proof-of-work difficulty in leading zero bits. 16 matches the front-end.
 pow-difficulty: 16
 
+# Folder of static site files served on every path outside /api, making the
+# forum pages and their API one origin. Empty means auto: a "site" folder in
+# this plugin's data folder is served if it exists; otherwise API only.
+site-dir: ""
+
 # When the API sits behind a reverse proxy (Cloudflare), the socket address is
 # the proxy, not the visitor. Name the header carrying the real address so
 # per-thread poster IDs work — e.g. "CF-Connecting-IP". The address is used

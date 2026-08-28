@@ -45,6 +45,8 @@ public final class NoCoordsNukkitPlugin extends PluginBase {
                       "pow-difficulty=16",
                       "# Behind Cloudflare set CF-Connecting-IP (used once, never stored).",
                       "proxy-ip-header=",
+                      "# Static site folder; empty = serve the data folder's `site` dir if present.",
+                      "site-dir=",
                       "")
                   .getBytes(java.nio.charset.StandardCharsets.UTF_8));
         }
@@ -61,10 +63,15 @@ public final class NoCoordsNukkitPlugin extends PluginBase {
               props.getProperty("allowed-origin", "*").trim(),
               Integer.parseInt(props.getProperty("pow-difficulty", "16").trim()),
               props.getProperty("proxy-ip-header", "").trim(),
-              new File(dataFolder, "data.json").toPath());
+              new File(dataFolder, "data.json").toPath(),
+              ForumConfig.resolveSiteDir(
+                  props.getProperty("site-dir", ""), new File(dataFolder, "site").toPath()));
       server = new ForumServer(config, logger);
       server.start();
       logger.info("Forum API listening on " + config.bind() + ":" + config.port());
+      if (config.siteDir() != null) {
+        logger.info("Serving the site from " + config.siteDir().toAbsolutePath());
+      }
       if (config.adminKey().isEmpty()) {
         logger.info("No admin-key set: post removal is disabled until you configure one.");
       }

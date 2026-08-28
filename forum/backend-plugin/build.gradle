@@ -3,7 +3,12 @@ plugins {
 }
 
 group = 'org.nocoords'
-version = '1.0.0'
+version = '1.0.1'
+
+// The Nukkit entry point compiles against a minimal stub of PluginBase
+// (src/nukkit-stub); the stub itself must never ship in the jar, where it
+// would shadow the server's real class.
+sourceSets.main.java.srcDir 'src/nukkit-stub'
 
 repositories {
     maven { url = 'https://repo.papermc.io/repository/maven-public/' }
@@ -29,6 +34,7 @@ compileJava {
 
 jar {
     archiveBaseName = 'nocoords-backend'
+    exclude 'cn/**'
     manifest {
         // Lets the same jar run standalone: java -jar nocoords-backend.jar
         attributes 'Main-Class': 'org.nocoords.forum.Standalone'

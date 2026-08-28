@@ -27,7 +27,9 @@ public final class NoCoordsPlugin extends JavaPlugin {
               config.getString("allowed-origin", "*"),
               config.getInt("pow-difficulty", 16),
               config.getString("proxy-ip-header", ""),
-              new File(getDataFolder(), "data.json").toPath());
+              new File(getDataFolder(), "data.json").toPath(),
+              ForumConfig.resolveSiteDir(
+                  config.getString("site-dir", ""), new File(getDataFolder(), "site").toPath()));
       server = new ForumServer(forumConfig, getLogger());
       server.start();
       getLogger()

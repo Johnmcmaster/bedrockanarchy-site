@@ -39,11 +39,15 @@ public final class Standalone {
             props.getProperty("allowed-origin", "*"),
             Integer.parseInt(props.getProperty("pow-difficulty", "16")),
             props.getProperty("proxy-ip-header", ""),
-            Path.of(props.getProperty("data-file", "nocoords-data.json")));
+            Path.of(props.getProperty("data-file", "nocoords-data.json")),
+            ForumConfig.resolveSiteDir(props.getProperty("site-dir", ""), Path.of("site")));
 
     ForumServer server = new ForumServer(config, logger);
     server.start();
     logger.info("NoCoords forum API listening on " + config.bind() + ":" + config.port());
+    if (config.siteDir() != null) {
+      logger.info("Serving the site from " + config.siteDir().toAbsolutePath());
+    }
     if (config.adminKey().isEmpty()) {
       logger.info("No admin-key set: post removal is disabled until you configure one.");
     }
