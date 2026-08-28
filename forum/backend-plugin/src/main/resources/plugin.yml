@@ -1,0 +1,5 @@
+name: NoCoordsForum
+version: 1.0.0
+main: org.nocoords.forum.NoCoordsPlugin
+api-version: "1.13"
+description: Anonymous text-only forum backend for nocoords.org

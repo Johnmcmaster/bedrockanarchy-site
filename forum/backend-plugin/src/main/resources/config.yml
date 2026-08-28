@@ -1,0 +1,25 @@
+# NoCoords forum backend.
+#
+# The API listens on its own TCP port, separate from the game port. On a
+# shared host (UltraServers etc.) allocate an extra port in the panel and put
+# it here.
+port: 8321
+bind: "0.0.0.0"
+
+# Required for post removal (the X-Admin-Key header / the #admin box on the
+# site). Long and random; empty disables removal entirely.
+admin-key: ""
+
+# CORS: which site may call this API from a browser. "*" allows any origin,
+# which is fine while testing; lock it to your site when live.
+allowed-origin: "*"
+
+# Proof-of-work difficulty in leading zero bits. 16 matches the front-end.
+pow-difficulty: 16
+
+# When the API sits behind a reverse proxy (Cloudflare), the socket address is
+# the proxy, not the visitor. Name the header carrying the real address so
+# per-thread poster IDs work — e.g. "CF-Connecting-IP". The address is used
+# once for the poster-ID HMAC and discarded; it is never logged or stored,
+# with or without this setting.
+proxy-ip-header: ""

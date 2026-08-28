@@ -4,10 +4,11 @@ Anonymous, text-only message board for the Minecraft anarchy scene — any
 server, any edition, not just BedrockAnarchy. No accounts, no uploads, no
 tracking.
 
-Current state: **front-end complete, running against a mock backend.** Every
-post lives in the visitor's own `localStorage`, so nothing is shared between
-browsers yet. The UI, the crypto, and the anti-spam are all real and final —
-only the storage is fake.
+Current state: **front-end complete, and the real backend is built** — see
+`backend-plugin/`, a jar that runs as a Minecraft server plugin or standalone.
+The deployed pages still run against the mock (every post lives in the
+visitor's own `localStorage`) until the backend is hosted and `api.js` is
+flipped to `BACKEND = "http"`.
 
 ## Files
 
@@ -39,8 +40,14 @@ node forum/test/ui.test.mjs
 
 ## Going live
 
-Set `BACKEND = "http"` and `API_BASE` in `api.js`, then implement the contract
-below. Nothing else in the codebase needs to change.
+The real backend exists: `backend-plugin/` is a dependency-free jar that runs
+inside a Paper/Spigot server as a plugin, or standalone with `java -jar`. It
+implements the contract below, including every server-side privacy rule. See
+`backend-plugin/README.md` for deployment (ports, Cloudflare HTTPS, config).
+
+To switch the site over: set `BACKEND = "http"` and `API_BASE` in `api.js`,
+and add the API origin to `connect-src` in the three pages' CSP tags. Nothing
+else in the codebase needs to change.
 
 ### API contract
 
@@ -54,19 +61,20 @@ GET    /api/boards/:boardId/threads
 
 GET    /api/threads/:threadId
        -> { thread: { id, boardId, subject, createdAt, bumpedAt },
-            posts: [{ id, threadId, posterId, body, createdAt, removed }] }
-          sorted by createdAt asc
+            posts: [{ id, threadId, posterId, body, createdAt, removed }],
+            you }                     you = the requester's poster ID in this
+          sorted by createdAt asc     thread (real backend only; mock omits it)
 
 GET    /api/challenge
        -> { seed, difficulty }        seed must be single-use and expire (~5 min)
 
 POST   /api/threads
        <- { boardId, subject, body, proof: { seed, nonce } }
-       -> { threadId }
+       -> { threadId, posterId }
 
 POST   /api/threads/:threadId/posts
        <- { body, proof: { seed, nonce } }
-       -> { postId }
+       -> { postId, posterId }
 
 DELETE /api/posts/:postId             header: X-Admin-Key
        -> { removed: true }

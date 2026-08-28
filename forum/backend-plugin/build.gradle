@@ -1,0 +1,36 @@
+plugins {
+    id 'java'
+}
+
+group = 'org.nocoords'
+version = '1.0.0'
+
+repositories {
+    maven { url = 'https://repo.papermc.io/repository/maven-public/' }
+    mavenCentral()
+}
+
+dependencies {
+    // Only the Bukkit entry point compiles against this; the server provides
+    // it at runtime. Everything else is pure JDK — the jar ships no libraries.
+    compileOnly 'io.papermc.paper:paper-api:1.20.4-R0.1-SNAPSHOT'
+}
+
+java {
+    // Runs on any Java 17+ server (Paper 1.18+, and standalone anywhere).
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
+
+compileJava {
+    options.release = 17
+    options.encoding = 'UTF-8'
+}
+
+jar {
+    archiveBaseName = 'nocoords-backend'
+    manifest {
+        // Lets the same jar run standalone: java -jar nocoords-backend.jar
+        attributes 'Main-Class': 'org.nocoords.forum.Standalone'
+    }
+}

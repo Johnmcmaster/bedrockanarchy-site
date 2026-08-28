@@ -789,6 +789,8 @@ function initComposer(form, { withSubject, submit, draftKey }) {
       submitButton.disabled = false;
     }
   });
+
+  form.dataset.ready = "1";
 }
 
 /* ------------------------------------------------------------------ *
@@ -902,7 +904,9 @@ async function renderThread() {
     `<a href="./board.html?b=${encodeURIComponent(thread.boardId)}">/${escapeHtml(thread.boardId)}/</a>`;
 
   const postList = document.querySelector("#post-list");
-  const yourId = await posterIdFor(thread.id);
+  // A real backend derives poster IDs server-side and reports yours as `you`;
+  // the mock has no server, so it falls back to the local derivation.
+  const yourId = data.you ?? (await posterIdFor(thread.id));
   document.querySelector("#your-id").textContent = yourId;
   const yourName = document.querySelector("#your-name");
   if (yourName) yourName.textContent = handleFor(yourId);
@@ -1089,6 +1093,14 @@ const page = document.body.dataset.page;
 showMockNotice();
 ensureObfuscation();
 document.querySelector("#pow-difficulty")?.replaceChildren(String(POW_DIFFICULTY));
+
+// The composer forms exist in the static HTML before the async page setup
+// wires their real submit handlers, so a very fast submit (or an automated
+// one) could fall through to a native form submission. Swallow those
+// synchronously; the real handler takes over once initComposer runs.
+document.querySelectorAll("form.composer").forEach((form) => {
+  form.addEventListener("submit", (event) => event.preventDefault());
+});
 
 // Texture probe resolves before the page paints, so overrides apply to the
 // first render too. It is a no-op unless the local opt-in flag is set.
