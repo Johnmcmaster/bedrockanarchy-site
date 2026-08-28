@@ -1,0 +1,1076 @@
+/*
+ * NoCoords forum styles.
+ * Familiar and plain: Reddit-style feed, Discord-style flat messages,
+ * one accent. The simplicity is the point.
+ *
+ * Self-contained on purpose: no @import, no webfont, no third-party request
+ * of any kind, so visiting the forum does not leak the visitor's IP to a
+ * font CDN or an analytics host.
+ */
+
+:root {
+  --page: #f2f3f0;
+  --white: #ffffff;
+  --line: #e0e2dd;
+  --text: #1d211e;
+  --muted: #767b74;
+  --link: #33608a;
+  --accent: #3a9d4e;
+  --greentext: #5f9427;
+  --danger: #c22e1c;
+  --sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: var(--sans);
+  font-size: 14px;
+  color: var(--text);
+  background: var(--page);
+}
+
+a {
+  color: var(--link);
+  text-decoration: none;
+}
+
+a:hover,
+a:focus-visible {
+  text-decoration: underline;
+}
+
+h1,
+h2,
+h3,
+p {
+  margin: 0;
+}
+
+.shell {
+  width: min(760px, calc(100% - 24px));
+  margin: 0 auto;
+  padding: 0 0 60px;
+}
+
+/* ---------- header ---------- */
+
+.masthead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--white);
+}
+
+.wordmark {
+  display: inline-flex;
+  align-items: center;
+}
+
+.wordmark img {
+  height: 16px;
+  width: auto;
+  display: block;
+}
+
+.wordmark:hover {
+  text-decoration: none;
+}
+
+.tagline {
+  display: none;
+}
+
+.masthead-nav {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  font-size: 13px;
+}
+
+.masthead-nav a {
+  color: var(--muted);
+}
+
+.masthead-nav a:hover {
+  color: var(--text);
+  text-decoration: none;
+}
+
+/* ---------- notices ---------- */
+
+.notice {
+  margin-top: 12px;
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--white);
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.notice strong {
+  color: var(--text);
+}
+
+.notice p + p {
+  margin-top: 5px;
+}
+
+.notice code {
+  font-family: var(--mono);
+  font-size: 12px;
+}
+
+.notice-spaced {
+  margin-top: 24px;
+}
+
+/* ---------- page intro ---------- */
+
+.page-head {
+  padding: 18px 0 4px;
+}
+
+.eyebrow {
+  display: none;
+}
+
+.page-head h1 {
+  font-size: 20px;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+
+.page-head p {
+  max-width: 70ch;
+  margin-top: 4px;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--muted);
+}
+
+.page-head-meta {
+  margin-top: 3px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+/* ---------- section headers ---------- */
+
+.toolbar {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 22px 0 8px;
+}
+
+.section-title {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+/* ---------- board list ---------- */
+
+.board-grid {
+  display: grid;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--white);
+  overflow: hidden;
+}
+
+.board-card {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 9px 12px;
+  color: var(--text);
+}
+
+.board-card + .board-card {
+  border-top: 1px solid var(--line);
+}
+
+.board-card:hover,
+.board-card:focus-visible {
+  background: var(--page);
+  text-decoration: none;
+}
+
+.board-slug {
+  min-width: 72px;
+  font-weight: 700;
+  color: var(--link);
+}
+
+.board-card h2 {
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--muted);
+}
+
+.board-card h2::before {
+  content: "· ";
+}
+
+.board-card p {
+  display: none;
+}
+
+.board-stat {
+  margin-left: auto;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+/* ---------- thread list ---------- */
+
+.thread-list {
+  display: grid;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--white);
+  overflow: hidden;
+}
+
+.thread-row {
+  display: grid;
+  gap: 2px;
+  padding: 10px 12px;
+}
+
+.thread-row + .thread-row {
+  border-top: 1px solid var(--line);
+}
+
+.thread-row:hover {
+  background: #fcfcfc;
+}
+
+.thread-row h3 {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.thread-row h3 a {
+  color: var(--text);
+}
+
+.thread-excerpt {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+
+.thread-meta,
+.vote-box {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  margin-left: auto;
+}
+
+.vote {
+  background: none;
+  border: 0;
+  padding: 2px 5px;
+  cursor: pointer;
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1;
+}
+
+.vote:hover {
+  color: var(--text);
+}
+
+.vote:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.vote-up.vote-active {
+  color: var(--accent);
+}
+
+.vote-down.vote-active {
+  color: var(--danger);
+}
+
+.vote-score {
+  min-width: 16px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.vote-score-neg,
+.thread-score-neg {
+  color: var(--danger);
+}
+
+.post-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+/* ---------- posts: flat chat-style messages ---------- */
+
+.post-list {
+  display: grid;
+  margin-top: 4px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--white);
+  overflow: hidden;
+}
+
+.post {
+  padding: 10px 14px 12px;
+}
+
+.post + .post {
+  border-top: 1px solid var(--line);
+}
+
+.post-op {
+  background: #fffdfa;
+}
+
+.poster-name {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.op-tag {
+  font-size: 12px;
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.poster-id {
+  color: var(--muted);
+}
+
+.post-body {
+  margin-top: 3px;
+  font-size: 14px;
+  line-height: 1.55;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.post-body .greentext {
+  color: var(--greentext);
+}
+
+.post-body a {
+  overflow-wrap: anywhere;
+}
+
+.post-removed .post-body {
+  color: var(--muted);
+  font-style: italic;
+}
+
+.post-actions {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.post-no {
+  margin-left: auto;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.post-no:hover {
+  color: var(--link);
+  text-decoration: none;
+}
+
+.post-ref {
+  font-weight: 600;
+}
+
+.post:target,
+.post-flash {
+  background: #f3f8ef;
+}
+
+@keyframes post-flash-fade {
+  from { background: #e2efd9; }
+  to { background: #f3f8ef; }
+}
+
+.post-flash {
+  animation: post-flash-fade 0.9s ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .post-flash {
+    animation: none;
+  }
+}
+
+/* ---------- § formatting codes ---------- */
+
+.mc-0 { color: #000000; }
+.mc-1 { color: #0000aa; }
+.mc-2 { color: #00aa00; }
+.mc-3 { color: #00aaaa; }
+.mc-4 { color: #aa0000; }
+.mc-5 { color: #aa00aa; }
+.mc-6 { color: #ffaa00; }
+.mc-7 { color: #aaaaaa; }
+.mc-8 { color: #555555; }
+.mc-9 { color: #5555ff; }
+.mc-a { color: #55ff55; }
+.mc-b { color: #55ffff; }
+.mc-c { color: #ff5555; }
+.mc-d { color: #ff55ff; }
+.mc-e { color: #ffff55; }
+.mc-f { color: #ffffff; text-shadow: 0 0 1px #b5b5b5; }
+.mc-l { font-weight: 700; }
+.mc-o { font-style: italic; }
+.mc-n { text-decoration: underline; }
+.mc-m { text-decoration: line-through; }
+.mc-n.mc-m { text-decoration: underline line-through; }
+
+/* /mojangles posts render in the pixel font */
+.post-body.mojangles {
+  font-family: "Monocraft", var(--mono);
+  font-size: 15px;
+}
+
+/* ---------- slash-command palette ---------- */
+
+.cmd-palette {
+  margin-top: 6px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--white);
+  overflow: hidden;
+}
+
+.cmd-item {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  width: 100%;
+  padding: 7px 10px;
+  border: 0;
+  background: none;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.cmd-item + .cmd-item {
+  border-top: 1px solid var(--line);
+}
+
+.cmd-item-active,
+.cmd-item:hover {
+  background: #eef3ec;
+}
+
+.cmd-name {
+  font-family: "Monocraft", var(--mono);
+  font-size: 13px;
+  color: var(--link);
+}
+
+.cmd-name b {
+  color: var(--accent);
+}
+
+.cmd-desc {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+/* ---------- in-place live formatting editor ---------- */
+
+.editor-wrap {
+  position: relative;
+}
+
+/* Mirrors the textarea's metrics exactly so styled text sits under the caret. */
+.editor-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  padding: 8px 10px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  font-family: var(--sans);
+  font-size: 14px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  overflow: hidden;
+  color: var(--text);
+  pointer-events: none;
+}
+
+.editor-wrap .editor-input {
+  position: relative;
+  z-index: 1;
+}
+
+.editor-live .editor-backdrop {
+  background: var(--white);
+}
+
+.editor-live .editor-input {
+  color: transparent;
+  caret-color: var(--text);
+  background: transparent;
+}
+
+.mojangles-mode .editor-input,
+.mojangles-mode .editor-backdrop {
+  font-family: "Monocraft", var(--mono);
+  font-size: 15px;
+}
+
+/* Code tokens show their own formatting, slightly faded so text stands out. */
+.e-code {
+  opacity: 0.55;
+}
+
+/* Metric-safe bold and italic: shadow-thickened and synthetically slanted,
+   so glyph advances match the invisible textarea text. */
+.e-l {
+  text-shadow: 0.045em 0 currentColor;
+}
+
+.e-o {
+  font-style: oblique 12deg;
+}
+
+
+
+/* ---------- /book posts ---------- */
+
+/*
+ * Monocraft — a Minecraft-style pixel font by Idrees Hassan, SIL Open Font
+ * License 1.1 (see fonts/LICENSE-Monocraft.txt). Served from this origin,
+ * so the no-external-requests rule still holds. Used only inside the book
+ * reader; the rest of the site keeps the system stack.
+ *
+ * The open-book artwork (assets/book_open.png) was supplied by the site
+ * owner as fan-made art. The item icon and remaining chrome are original.
+ */
+@font-face {
+  font-family: "Monocraft";
+  src: url("fonts/Monocraft.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+.book-inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+  padding: 6px 12px 6px 8px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #faf6ea;
+  font: inherit;
+  cursor: pointer;
+}
+
+.book-inline:hover {
+  background: #f4edd9;
+}
+
+.book-inline:focus-visible {
+  outline: 2px solid var(--link);
+}
+
+.book-inline svg,
+.book-icon-img {
+  image-rendering: pixelated;
+}
+
+.book-inline-title {
+  font-family: "Monocraft", var(--mono);
+  font-size: 13px;
+}
+
+.book-inline-pages {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.book-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(20, 18, 12, 0.6);
+}
+
+.book-wrap {
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+  width: min(720px, 96vw);
+}
+
+/* Two-page spread over the owner-supplied book art. */
+.book-gui {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 728 / 468;
+  background: url("assets/book_open.png") center / 100% 100% no-repeat;
+  image-rendering: pixelated;
+  filter: drop-shadow(0 14px 34px rgba(0, 0, 0, 0.5));
+  animation: book-open 0.28s ease-out;
+}
+
+/* Local texture override still wins when enabled. */
+.has-book-page-texture .book-gui {
+  background: url("textures/book_page.png") center / 100% 100% no-repeat;
+}
+
+.book-col {
+  position: absolute;
+  top: 7%;
+  bottom: 12%;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.book-col-left {
+  left: 7.5%;
+  width: 38%;
+}
+
+.book-col-right {
+  right: 7.5%;
+  width: 38%;
+}
+
+.book-page-num {
+  font-family: "Monocraft", var(--mono);
+  font-size: clamp(9px, 1.7vw, 12px);
+  color: #6b5b40;
+  text-align: right;
+}
+
+.book-page-text {
+  flex: 1;
+  overflow: hidden;
+  font-family: "Monocraft", var(--mono);
+  font-size: clamp(10px, 2vw, 15px);
+  line-height: 1.55;
+  color: #2b2013;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.book-page-text .greentext {
+  color: #4e7a1e;
+}
+
+.book-page-text a {
+  color: #274a75;
+  text-decoration: underline;
+}
+
+@keyframes book-turn-right {
+  from { transform: translateX(10px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes book-turn-left {
+  from { transform: translateX(-10px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+@keyframes book-open {
+  from { transform: scale(0.3) rotate(-4deg); opacity: 0; }
+  to { transform: scale(1) rotate(0); opacity: 1; }
+}
+
+@keyframes book-write {
+  from { clip-path: inset(0 0 100% 0); }
+  to { clip-path: inset(0 0 0 0); }
+}
+
+.book-write { animation: book-write 0.55s ease-out; }
+
+.book-turn-right { animation: book-turn-right 0.16s ease-out; }
+.book-turn-left { animation: book-turn-left 0.16s ease-out; }
+
+@media (prefers-reduced-motion: reduce) {
+  .book-turn-right,
+  .book-turn-left,
+  .book-write,
+  .book-gui {
+    animation: none;
+  }
+}
+
+.book-arrow {
+  position: absolute;
+  bottom: 4.5%;
+  padding: 4px 6px;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+
+.book-arrow-prev { left: 8%; }
+.book-arrow-next { right: 8%; }
+
+/* Arrows brighten on hover, the way the game's page arrows highlight. */
+.book-arrow:hover svg,
+.book-arrow:focus-visible svg {
+  filter: brightness(1.4) saturate(1.2);
+}
+
+.book-arrow:focus-visible {
+  outline: none;
+}
+
+/* Classic beveled game button. */
+.mc-button {
+  min-width: 130px;
+  padding: 6px 16px;
+  border: 2px solid #1c1c1c;
+  background: #9c9c9c;
+  box-shadow:
+    inset 2px 2px 0 #d3d3d3,
+    inset -2px -2px 0 #5a5a5a;
+  color: #ffffff;
+  font-family: "Monocraft", var(--mono);
+  font-size: 15px;
+  text-shadow: 1px 1px 0 #3f3f3f;
+  cursor: pointer;
+}
+
+.mc-button:hover,
+.mc-button:focus-visible {
+  background: #8a94c4;
+  outline: none;
+}
+
+/* ---------- sealed post block ---------- */
+
+.sealed {
+  display: grid;
+  gap: 8px;
+  margin-top: 6px;
+  padding: 10px 12px;
+  border: 1px dashed var(--line);
+  border-radius: 6px;
+  background: var(--page);
+}
+
+.sealed-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.sealed-form {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.sealed-form input {
+  flex: 1 1 170px;
+}
+
+.sealed-error {
+  font-size: 12px;
+  color: var(--danger);
+}
+
+/* ---------- forms ---------- */
+
+.composer {
+  display: grid;
+  gap: 8px;
+  margin-top: 14px;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--white);
+}
+
+.composer h2 {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.field {
+  display: grid;
+  gap: 4px;
+}
+
+.field label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+input[type="text"],
+input[type="password"],
+textarea,
+select {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid #c6c9c4;
+  border-radius: 6px;
+  background: var(--white);
+  color: var(--text);
+  font-family: var(--sans);
+  font-size: 14px;
+}
+
+textarea {
+  min-height: 60px;
+  line-height: 1.5;
+  resize: vertical;
+}
+
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 2px solid var(--link);
+  outline-offset: 0;
+}
+
+.field-hint {
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.advanced {
+  font-size: 13px;
+}
+
+.advanced summary {
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.advanced summary:hover {
+  color: var(--text);
+}
+
+.advanced-body {
+  display: grid;
+  gap: 8px;
+  padding: 8px 0 2px;
+}
+
+.check-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.check-row input {
+  margin-top: 3px;
+  accent-color: var(--accent);
+}
+
+.check-row label {
+  font-size: 13px;
+  color: var(--text);
+}
+
+.composer-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 30px;
+  padding: 0 12px;
+  border: 1px solid #c6c9c4;
+  border-radius: 6px;
+  background: var(--white);
+  color: var(--text);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.button:hover:not(:disabled) {
+  background: var(--page);
+}
+
+.button:focus-visible {
+  outline: 2px solid var(--link);
+  outline-offset: 1px;
+}
+
+.button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.button-primary {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: #ffffff;
+}
+
+.button-primary:hover:not(:disabled) {
+  background: #338a44;
+}
+
+.button-small {
+  min-height: 26px;
+  padding: 0 10px;
+  font-size: 12px;
+}
+
+.button-danger {
+  border-color: var(--danger);
+  color: var(--danger);
+  background: var(--white);
+}
+
+.button-danger:hover:not(:disabled) {
+  background: #faf0ee;
+}
+
+.char-count {
+  margin-left: auto;
+  font-size: 12px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.char-count-low {
+  color: var(--danger);
+}
+
+.status {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.status-error {
+  color: var(--danger);
+}
+
+/* ---------- misc ---------- */
+
+.empty {
+  padding: 20px 12px;
+  border: 1px dashed var(--line);
+  border-radius: 6px;
+  color: var(--muted);
+  text-align: center;
+  background: var(--white);
+}
+
+.crumbs {
+  margin-top: 12px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.site-foot {
+  margin-top: 40px;
+  padding-top: 10px;
+  border-top: 1px solid var(--line);
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--muted);
+}
+
+.site-foot p + p {
+  margin-top: 2px;
+}
+
+.admin-bar {
+  display: none;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+  padding: 8px 12px;
+  border: 1px solid var(--danger);
+  border-radius: 6px;
+  background: #fdf3f1;
+  font-size: 13px;
+  color: var(--text);
+}
+
+.admin-bar.is-active {
+  display: flex;
+}
+
+.admin-bar input {
+  width: 160px;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (max-width: 640px) {
+  .shell {
+    width: min(100% - 16px, 760px);
+  }
+}

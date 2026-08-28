@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Thread — NoCoords</title>
+  <meta name="description" content="Anonymous text-only thread on NoCoords.">
+  <meta name="referrer" content="no-referrer">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; form-action 'none'; base-uri 'none'">
+  <link rel="icon" type="image/png" href="assets/brand/nocoords-favicon-64.png">
+  <link rel="stylesheet" href="forum.css?v=3">
+</head>
+<body data-page="thread">
+  <div class="shell">
+    <header class="masthead">
+      <a class="wordmark" href="./index.html"><img src="assets/brand/nocoords-wordmark-black.svg" alt="NoCoords"></a>
+    </header>
+
+    <main>
+      <p class="notice" id="mock-notice" hidden>
+        <strong>Preview.</strong> No server yet — posts stay in this browser.
+      </p>
+
+      <p class="crumbs"><a href="./index.html">boards</a> / <span id="thread-board"></span></p>
+
+      <div id="thread-shell">
+        <div class="page-head">
+          <p class="eyebrow">Thread</p>
+          <h1 id="thread-subject">Loading…</h1>
+          <p class="page-head-meta" id="thread-info"></p>
+        </div>
+
+        <div class="post-list" id="post-list"></div>
+      </div>
+
+      <section id="reply-section">
+        <form class="composer" id="reply-form" autocomplete="off">
+          <div class="field">
+            <label class="visually-hidden" for="body">Reply</label>
+            <textarea id="body" name="body" maxlength="8000" placeholder="Reply…"></textarea>
+          </div>
+
+          <details class="advanced">
+            <summary>Private post (encrypted)</summary>
+            <div class="advanced-body">
+              <div class="check-row">
+                <input type="checkbox" id="sealed" name="sealed">
+                <label for="sealed">Lock this post with a passphrase</label>
+              </div>
+              <div class="field" id="pass-field" hidden>
+                <label class="visually-hidden" for="passphrase">Passphrase</label>
+                <input type="password" id="passphrase" name="passphrase" autocomplete="new-password" placeholder="Passphrase">
+                <p class="field-hint">Never leaves your browser. Can't be recovered.</p>
+              </div>
+            </div>
+          </details>
+
+          <div class="composer-actions">
+            <button class="button button-primary" type="submit">Reply</button>
+            <span class="field-hint">as <strong id="your-name">…</strong><span id="your-id" hidden></span></span>
+            <span class="status"></span>
+          </div>
+        </form>
+      </section>
+
+      <div class="admin-bar" id="admin-bar">
+        <span>Operator tools · <span id="admin-state">locked</span></span>
+        <label class="visually-hidden" for="admin-key">Admin key</label>
+        <input type="password" id="admin-key" placeholder="Admin key" autocomplete="off">
+        <button class="button button-small" type="button" id="admin-apply">Unlock</button>
+        <button class="button button-small" type="button" id="admin-clear">Lock</button>
+      </div>
+    </main>
+
+    <footer class="site-foot">
+      <p>Text only · no accounts · no logs</p>
+    </footer>
+  </div>
+
+  <script type="module" src="forum.js?v=3"></script>
+</body>
+</html>

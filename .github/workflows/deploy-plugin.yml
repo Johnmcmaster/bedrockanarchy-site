@@ -1,0 +1,44 @@
+# Uploads the forum backend plugin jar to the game server over SFTP.
+# Manual-only: run it from the Actions tab (or API) whenever the jar changes.
+# Uses the same secrets as deploy-sftp.yml; no credentials live in this file.
+name: Upload forum plugin
+
+on:
+  # workflow_dispatch only registers from the default branch, so until this
+  # branch merges, pushes touching the jar (or this file) trigger the upload.
+  push:
+    paths:
+      - forum/backend-plugin/dist/**
+      - .github/workflows/deploy-plugin.yml
+  workflow_dispatch:
+    inputs:
+      remote_dir:
+        description: Remote folder to place the jar in
+        default: /plugins
+        required: false
+
+concurrency: deploy-plugin
+
+jobs:
+  upload:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install lftp
+        run: sudo apt-get update && sudo apt-get install -y lftp
+
+      - name: Upload plugin jar
+        env:
+          LFTP_PASSWORD: ${{ secrets.SFTP_PASSWORD }}
+          REMOTE_DIR: ${{ github.event.inputs.remote_dir || '/plugins' }}
+        run: |
+          lftp --env-password -u "${{ secrets.SFTP_USERNAME }}" -p "${{ secrets.SFTP_PORT }}" "sftp://${{ secrets.SFTP_HOST }}" <<EOF
+          set sftp:auto-confirm yes
+          echo "--- server root:"
+          cls -la /
+          echo "--- uploading jar to $REMOTE_DIR"
+          put -O "$REMOTE_DIR" forum/backend-plugin/dist/nocoords-backend-1.0.0.jar
+          echo "--- $REMOTE_DIR after upload:"
+          cls -la "$REMOTE_DIR"
+          EOF

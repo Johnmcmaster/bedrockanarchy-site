@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NoCoords | Anonymous Minecraft Anarchy Forum</title>
+  <meta name="description" content="Anonymous text-only forum for Minecraft anarchy players. No accounts, no uploads, no tracking.">
+  <meta name="referrer" content="no-referrer">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; form-action 'none'; base-uri 'none'">
+  <link rel="canonical" href="https://nocoords.org/">
+  <link rel="icon" type="image/png" href="assets/brand/nocoords-favicon-64.png">
+  <link rel="stylesheet" href="forum.css?v=3">
+</head>
+<body data-page="index">
+  <div class="shell">
+    <header class="masthead">
+      <a class="wordmark" href="./index.html"><img src="assets/brand/nocoords-wordmark-black.svg" alt="NoCoords"></a>
+    </header>
+
+    <main>
+      <p class="notice" id="mock-notice" hidden>
+        <strong>Preview.</strong> No server yet — posts stay in this browser.
+      </p>
+
+      <div class="page-head">
+        <p>
+          The Minecraft anarchy board. No accounts — you type, you post, nothing about you
+          is saved.
+        </p>
+      </div>
+
+      <div class="toolbar">
+        <span class="section-title">Boards</span>
+      </div>
+      <div class="board-grid" id="board-grid"></div>
+
+      <div class="toolbar">
+        <span class="section-title">Recent threads</span>
+      </div>
+      <div class="thread-list" id="recent-threads"></div>
+
+      <div class="admin-bar" id="admin-bar">
+        <span>Operator tools · <span id="admin-state">locked</span></span>
+        <label class="visually-hidden" for="admin-key">Admin key</label>
+        <input type="password" id="admin-key" placeholder="Admin key" autocomplete="off">
+        <button class="button button-small" type="button" id="admin-apply">Unlock</button>
+        <button class="button button-small" type="button" id="admin-clear">Lock</button>
+      </div>
+    </main>
+
+    <footer class="site-foot">
+      <p>Text only · no accounts · no logs · posts can be locked with a passphrase</p>
+    </footer>
+  </div>
+
+  <script type="module" src="forum.js?v=3"></script>
+</body>
+</html>
