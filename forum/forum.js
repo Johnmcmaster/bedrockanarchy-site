@@ -5,7 +5,7 @@
  * external requests at runtime.
  */
 
-import { api, isMock, posterIdFor, POW_DIFFICULTY } from "./api.js";
+import { api, isMock, posterIdFor, POW_DIFFICULTY } from "./api.js?v=2";
 import { solve } from "./pow.js";
 import { isSealed, seal, unseal } from "./crypto.js";
 

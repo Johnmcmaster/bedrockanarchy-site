@@ -374,6 +374,10 @@ public final class ForumServer {
     if (type.startsWith("text/html")) {
       headers.set("Content-Security-Policy", PAGE_CSP);
       headers.set("Cache-Control", "no-cache");
+    } else if (type.startsWith("text/") || type.startsWith("application/json")) {
+      // CSS/JS must not get pinned at the CDN edge, or deploys go stale for
+      // an hour. They're tiny; serving each request from here is nothing.
+      headers.set("Cache-Control", "no-cache");
     } else {
       headers.set("Cache-Control", "public, max-age=3600");
     }
