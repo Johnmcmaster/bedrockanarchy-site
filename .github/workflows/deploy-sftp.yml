@@ -1,0 +1,54 @@
+# Deploys the site over SFTP on every push to main (and on demand from the
+# Actions tab). Credentials live in GitHub Secrets — never in this repo:
+#
+#   Settings -> Secrets and variables -> Actions -> New repository secret
+#     SFTP_HOST       e.g. newburg.ultraservers.com
+#     SFTP_PORT       e.g. 60002
+#     SFTP_USERNAME   the panel's SFTP username
+#     SFTP_PASSWORD   the panel's SFTP password
+#
+#   Optionally, under Variables:
+#     SFTP_REMOTE_DIR remote folder to deploy into (default /website)
+#
+# The remote folder is fully managed by this workflow: files removed from the
+# repo are also removed remotely (mirror --delete). It never touches anything
+# outside SFTP_REMOTE_DIR, so server files stay safe.
+name: Deploy site over SFTP
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: sftp-deploy
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install lftp
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends lftp
+
+      - name: Upload over SFTP
+        env:
+          LFTP_PASSWORD: ${{ secrets.SFTP_PASSWORD }}
+          SFTP_HOST: ${{ secrets.SFTP_HOST }}
+          SFTP_PORT: ${{ secrets.SFTP_PORT }}
+          SFTP_USERNAME: ${{ secrets.SFTP_USERNAME }}
+          SFTP_REMOTE_DIR: ${{ vars.SFTP_REMOTE_DIR != '' && vars.SFTP_REMOTE_DIR || '/website' }}
+        run: |
+          lftp --env-password -u "$SFTP_USERNAME" -p "$SFTP_PORT" "sftp://$SFTP_HOST" <<LFTP
+          set sftp:auto-confirm yes
+          set net:max-retries 2
+          set net:timeout 20
+          mirror -R --delete --parallel=4 \
+            --exclude-glob .git* \
+            --exclude .github/ \
+            --exclude forum/test/ \
+            ./ "$SFTP_REMOTE_DIR"
+          quit
+          LFTP
